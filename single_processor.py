@@ -15,30 +15,39 @@ import threading
 import time
 from datetime import datetime
 from utils import setup_logging
-from database import DataDownloaders
+from database import DataDownloader
 from database.audit_results import AuditDatabase
 from workflow import get_workflow
+
 
 class ParallelProcessor:
     def __init__(self, config, task_id_list=None, delete=True):
 
         self.config = config
         self.task_id_list = task_id_list
-        self.downloader = DataDownloaders(config)
+        self.downloader = DataDownloader(config)
         self.workflow = get_workflow(config)
         self.data_dir = config.get("data_config", {}).get("data_dir")  # 数据目录
-        self.logger = setup_logging(config, log_name='audits')  # 日志记录器
-        self.task_queue = self.downloader.get_task_queue()  # 使用 DataDownloaders 的任务队列
+        self.logger = setup_logging(config, log_name='audits_sin')  # 日志记录器
+        self.task_queue = self.downloader.get_task_queue()  # 使用 DataDownloader 的任务队列
         self.running = True
         self.delete = delete  # 是否删除下载的文件
+        self.download_completed = False  # 新增标志，表示下载是否完成
 
     def download_task(self):
         """下载指定id列表任务"""
         logger = self.logger
         logger.info("下载线程已启动")
-        while self.running:
+        try:
             logging.info(f"开始下载数据...")
             self.downloader.download(self.task_id_list)
+            # 下载完成后设置标志
+            self.download_completed = True
+            logger.info("所有任务下载完成，下载线程将退出")
+        except Exception as e:
+            logger.error(f"下载任务时出错: {str(e)}")
+
+        # 不再需要循环，下载完成后线程自然结束
 
     def process_task(self):
         """处理任务队列中的任务"""
@@ -64,6 +73,8 @@ class ParallelProcessor:
                         logging.info(f"任务 {task_id} 的结果已保存到数据库, 用时 {time_end - time_start}")
                     else:
                         logging.warning(f"任务 {task_id} 没有返回结果")
+                    # 关闭数据库连接
+                    database.close()
                     # 标记任务完成
                     self.downloader.task_done()
                     # 删除数据
@@ -74,9 +85,16 @@ class ParallelProcessor:
                     # 如果处理失败，将任务重新放回队列
                     self.downloader.add_task(task_id, file_paths)
             else:
-                # 如果队列为空，等待一段时间
+                # 如果队列为空且下载完成，等待一小段时间确保没有新任务，然后退出
+                if self.download_completed:
+                    logging.info("队列为空且下载已完成，等待确认...")
+                    time.sleep(2)  # 短暂等待，确保没有新任务进入队列
+                    if self.task_queue.empty():
+                        logging.info("所有任务已处理完毕，处理线程将退出")
+                        break
+                # 如果队列为空但下载未完成，等待新任务
                 logging.info("队列为空，等待中...")
-                time.sleep(self.downloader.scan_interval/10)
+                time.sleep(self.downloader.scan_interval / 10)
 
     def start(self):
         # 启动下载线程
@@ -91,12 +109,21 @@ class ParallelProcessor:
             thread.start()
             processing_threads.append(thread)
 
-        # 主线程可以在这里执行其他任务，或者等待中断信号
+        # 主线程等待所有任务完成
         try:
-            while True:
-                time.sleep(1)
+            # 等待下载线程完成
+            download_thread.join()
+            logging.info("下载线程已完成")
+
+            # 等待处理线程完成
+            for thread in processing_threads:
+                thread.join()
+            logging.info("所有处理线程已完成")
+
+            logging.info("所有任务已完成，程序正常退出")
         except KeyboardInterrupt:
             self.running = False
+            logging.info("接收到中断信号，程序将停止")
             download_thread.join()
             for thread in processing_threads:
                 thread.join()
@@ -107,18 +134,28 @@ class ParallelProcessor:
         """删除数据目录self.data_dir下的task_id文件夹"""
         try:
             shutil.rmtree(os.path.join(self.data_dir, task_id))
-            logging.info(f"任务 {task_id} 处理完成，成功从队列中移除，删除数据目录 {os.path.join(self.data_dir, task_id)} 成功")
+            logging.info(
+                f"任务 {task_id} 处理完成，成功从队列中移除，删除数据目录 {os.path.join(self.data_dir, task_id)} 成功")
         except Exception as e:
             logging.error(f"删除数据目录 {os.path.join(self.data_dir, task_id)} 失败: {str(e)}")
 
 
 if __name__ == "__main__":
     from utils import load_config, setup_logging
+
     # 假设你有一个配置文件 config.py
     config = load_config()
-    task_id_list =  ["1225053238252797952","1230441506888744960"]
+    task_id_list = ["1296873620546519040"]
     processor = ParallelProcessor(config, task_id_list)
     processor.start()
+
+
+
+
+
+
+
+
 
 
 

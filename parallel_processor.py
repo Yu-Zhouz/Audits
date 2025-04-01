@@ -15,7 +15,7 @@ import threading
 import time
 from datetime import datetime
 from utils import setup_logging
-from database import DataDownloaders
+from database import DataDownloader
 from database.audit_results import AuditDatabase
 from workflow import get_workflow
 
@@ -23,12 +23,12 @@ class ParallelProcessor:
     def __init__(self, config, process_initial_data=False, delete=True):
 
         self.config = config
-        self.downloader = DataDownloaders(config)
+        self.downloader = DataDownloader(config)
         self.workflow = get_workflow(config)
         self.data_dir = config.get("data_config", {}).get("data_dir")  # 数据目录
         self.timestamp_file = config.get("workflow_config", {}).get("last_check_time")  # 保存时间戳的文件名
         self.logger = setup_logging(config, log_name='audits')  # 日志记录器
-        self.task_queue = self.downloader.get_task_queue()  # 使用 DataDownloaders 的任务队列
+        self.task_queue = self.downloader.get_task_queue()  # 使用 DataDownloader 的任务队列
         self.last_check_time = None
         self.running = True
         self.process_initial_data = process_initial_data  # 是否处理初始数据
@@ -120,6 +120,8 @@ class ParallelProcessor:
                         logging.info(f"任务 {task_id} 的结果已保存到数据库, 用时 {time_end - time_start}")
                     else:
                         logging.warning(f"任务 {task_id} 没有返回结果")
+                    # 关闭数据库连接
+                    database.close()
                     # 标记任务完成
                     self.downloader.task_done()
                     # 删除数据

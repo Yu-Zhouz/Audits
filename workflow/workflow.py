@@ -74,10 +74,6 @@ class Base_Workflow:
         # 提取 LLM 结果中出现次数最多的值
         if llm_results:
             self._many_results(llm_results)
-            # 如果有值为null则修改为None
-            for field, value in self.results_dict.items():
-                if value == "null":  # 检查是否为 null 或 None
-                    self.results_dict[field] = None
         else:
             # 除公章和id以外全部为None
             for field in self.results_dict.keys():
@@ -91,11 +87,18 @@ class Base_Workflow:
 
     @staticmethod
     def _mergers_comparison(results_worn, results_new):
-        """比较结果并合并"""
+        """比较结果并合并，对公章字段特殊处理"""
         results = {}  # 初始化一个空字典用于存储合并后的结果
         for field in results_worn.keys():  # 遍历 results_worn 的所有键
-            # 如果 results_new 包含该字段且值有效（非 None 且不等于 "null"）
-            if field in results_new and results_new[field] is not None and results_new[field] != "null":
+            # 特殊处理公章字段
+            if field == '公章':
+                # 如果任一字典中公章为True，则结果为True
+                if (results_worn.get(field) is True) or (field in results_new and results_new.get(field) is True):
+                    results[field] = True
+                else:
+                    results[field] = False
+            # 处理其他字段
+            elif field in results_new and results_new[field] is not None and results_new[field] != "null":
                 # 检查 results_worn 中对应字段的值是否为空或无效
                 if results_worn[field] is None or results_worn[field] == "null":
                     results[field] = results_new[field]  # 使用 results_new 的值
@@ -105,6 +108,7 @@ class Base_Workflow:
                 results[field] = results_worn[field]  # 直接使用 results_worn 的值
 
         return results  # 返回合并后的结果字典
+
     # @staticmethod
     # def _mergers_comparison(results_worn, results_new):
     #     """比较结果并合并"""

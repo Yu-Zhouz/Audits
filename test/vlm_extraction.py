@@ -395,16 +395,17 @@ if __name__ == "__main__":
     #              "./test_output/1225053238252797952/Screenshot_20231030_105314.jpg",
     #              "./test_output/1225053238252797952/Screenshot_20231030_105332.jpg",
     #              "./test_output/1225053238252797952/纪要20236号人员名单明细.pdf"]
-    file_list = ["./test_output/1230441506888744960/1714615444154_IMG_20240502_100320.jpg",
-                 "./test_output/1230441506888744960/mmexport1714619807231.jpg",
-                 "./test_output/1230441506888744960/Screenshot_20231030_105243.jpg",
-                 "./test_output/1230441506888744960/三栋镇农村住宅建设管理工作领导小组联席会议纪要(2023年6号）.pdf",
-                 "./test_output/1230441506888744960/冯远才.pdf",
-                 "./test_output/1230441506888744960/纪要20236号人员名单明细.pdf"]
+    # file_list = ["./test_output/1230441506888744960/1714615444154_IMG_20240502_100320.jpg",
+    #              "./test_output/1230441506888744960/mmexport1714619807231.jpg",
+    #              "./test_output/1230441506888744960/Screenshot_20231030_105243.jpg",
+    #              "./test_output/1230441506888744960/三栋镇农村住宅建设管理工作领导小组联席会议纪要(2023年6号）.pdf",
+    #              "./test_output/1230441506888744960/冯远才.pdf",
+    #              "./test_output/1230441506888744960/纪要20236号人员名单明细.pdf"]
     # file_list = ["./test_output/1212003154116214785/佐证2.pdf",
     #             "./test_output/1212003154116214785/县、镇证明.pdf",
     #             "./test_output/1212003154116214785/过后明细.pdf",
     #              "./test_output/1212003154116214785/过后纪要.pdf"]
+    file_list = ["./test_output/1296873620546519040/（已压缩）林源盛一户一档.pdf"]
     results = vlm.process_file_list(file_list)
     print("处理结果：", results)
 

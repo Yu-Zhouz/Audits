@@ -121,7 +121,7 @@ def download_patch_review_info(record_id: str, output_base_dir: str = "./output"
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="下载指定ID的佐证材料")
-    parser.add_argument("--id", default= '1282661511277314048', help="要查询的记录ID")
+    parser.add_argument("--id", default= '1319719191950917632', help="要查询的记录ID")
     parser.add_argument("--output", default="./test_output", help="输出目录路径")
     args = parser.parse_args()
 

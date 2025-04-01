@@ -26,6 +26,7 @@ class SealExtractor:
         self.image_dir = os.path.join(self.output_dir, "images")
         self.service_url = config.get("seal_config",{}).get("service_url")
         self.delete_files = config.get("data_config", {}).get("delete_files")
+        self.pdf_max_pages = config.get("vlm_config", {}).get("pdf_max_pages", 10)
         self._prepare_directories()
         # logging.info(f"Seal 服务已经初始化，服务器地址为： {self.service_url}")
 
@@ -80,6 +81,11 @@ class SealExtractor:
             image_path = os.path.join(self.image_dir, f"page_{i + 1}.jpg")
             image.save(image_path, "JPEG")
             image_paths.append(image_path)
+
+        # TODO: 指定最大页数,限制最大页数
+        if self.pdf_max_pages is not None:
+            image_paths = image_paths[:self.pdf_max_pages]
+
         return image_paths
 
     def _process_image(self, image_path):

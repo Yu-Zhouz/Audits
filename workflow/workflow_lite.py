@@ -8,6 +8,7 @@
 @Desc    : 使用VLM和MinerU和PaddleX文本处理双工作流
 @Usage   :
 """
+import copy
 import logging
 from models import MinerUOCR, PaddleOCR, SealExtractor, VLM
 from workflow.workflow import Base_Workflow
@@ -80,7 +81,7 @@ class Workflow(Base_Workflow):
             # 开始对结果进行后处理合并
             logging.info("开始对结果进行后处理！")
             empty_count = self.post_process(seal_results, llm_m_results)
-            results_miner = self.results_dict
+            results_miner = copy.deepcopy(self.results_dict)
             if empty_count >= self.max_empty_count:
                 logging.info(f"任务 {task_id} 中空字段数量大于 {self.max_empty_count} ，使用PaddlexOCR识别！")
                 for input_path in input_paths:
@@ -104,7 +105,7 @@ class Workflow(Base_Workflow):
                         logging.error(f"任务{task_id}中的文件{input_path}处理失败！错误信息：{str(e)}")
 
                 self.post_process(seal_results, llm_p_results)
-                results_paddle = self.results_dict
+                results_paddle = copy.deepcopy(self.results_dict)
                 results = self._mergers_comparison(results_miner, results_paddle)
                 # 将结果添加到字典results中
                 self.results_dict.update(results)

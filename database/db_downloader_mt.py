@@ -20,7 +20,7 @@ import cx_Oracle
 import queue
 
 
-class DataDownloaders:
+class DataDownloader:
     def __init__(self, config):
         self.config = config
         self.db_config = config.get("db_download_config", {})

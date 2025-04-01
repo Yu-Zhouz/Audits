@@ -8,6 +8,7 @@
 @Desc    : 使用VLM和MinerU的多模态和文本的双工作流
 @Usage   :
 """
+import copy
 import logging
 from models import MinerUOCR, SealExtractor, VLM
 from workflow.workflow import Base_Workflow
@@ -63,8 +64,9 @@ class Workflow(Base_Workflow):
             # 开始对结果进行后处理合并
             logging.info(f"开始对 {task_id} 结果进行后处理！")
             self._many_results(vlm_results)
-            empty_count = self.post_process(seal_results, vlm_results)
-            results_vlm = self.results_dict
+            empty_count = sum(1 for value in self.results_dict.values() if value is None or value == "")
+            # 将vlm结果深拷贝
+            results_vlm = copy.deepcopy(self.results_dict)
             if empty_count >= self.max_empty_count:
                 # 防止上下文过长,每次重新初始化一个VLM模型
                 vlm_m = VLM(self.config)
@@ -96,7 +98,8 @@ class Workflow(Base_Workflow):
                 # 开始对结果进行后处理合并
                 logging.info(f"开始对 {task_id} 结果进行后处理！")
                 self.post_process(seal_results, llm_m_results)
-                results_miner = self.results_dict
+                # 在 Miner 处理后创建结果的深拷贝
+                results_miner = copy.deepcopy(self.results_dict)
                 results = self._mergers_comparison(results_vlm, results_miner)
                 # 将结果添加到字典results中
                 self.results_dict.update(results)

@@ -12,8 +12,6 @@ from utils import load_config
 from parallel_processor import ParallelProcessor
 
 if __name__ == "__main__":
-
-    # 假设你有一个配置文件 config.py
     config = load_config()
 
     processor = ParallelProcessor(config, process_initial_data=True, delete=True)
