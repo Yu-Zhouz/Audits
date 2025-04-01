@@ -1,0 +1,72 @@
+# 项目配置文件
+project:
+  name: 斑图审核智能体
+  version: 1.0
+
+# 下载材料相关配置
+db_download_config:
+  user: 'SJCPB'
+  password: 'SJcp#2025'
+  host: '10.10.20.101'
+  port: 1521
+  sid: 'orcl'
+  retries: 3 # 数据库连接重试次数
+  num_threads: 16  # 线程数
+  scan_interval: 300   # 扫描间隔时间，单位为秒
+
+workflow_config:
+  workflow_type: "ultra"  # 可选择 ["mini", "lite", "ultra", "pro", "plus"]
+  max_empty_count: 2  # 最大空值数阈值
+  last_check_time: "./data/last_check_time.txt"  # 检查时间戳文件
+
+# 输入输出路径配置
+data_config:
+  delete_files: True
+  data_dir: ./data/data
+  output_dir: ./data/output
+  models_dir: ./data/models
+
+# OCR模型相关配置
+ocr_mineru_config:
+  model: doclayout_yolo
+  device: gpu:0
+
+ocr_paddle_config:
+  pipeline: OCR
+  device: gpu:0  # 部署设备，支持 GPU 或 CPU
+  batch_size: 1
+  service_url: http://172.16.15.10:30104/ocr  # 服务化部署的 URL
+
+# 印章识别服务化部署配置
+seal_config:
+  pipeline: seal_recognition
+  device: gpu:0  # 部署设备，支持 GPU 或 CPU
+  batch_size: 1
+  service_url: http://172.16.15.10:30105/seal-recognition  # 服务化部署的 URL
+
+# vllm服务化部署配置
+llm_config:
+  model: QwQ-32B
+  model_dir: /sxs/zhoufei/vLLM/models/QwQ-32B
+  device: gpu:0  # 部署设备，支持 GPU 或 CPU
+  service_url: http://172.16.15.10:30107/v1  # 该项目URL:http://172.16.15.10:30105
+  temperature: 0.7
+  top_p: 0.8
+  max_tokens: 4096
+  example_file : ../config/example.json  # 示例对话地址
+
+vlm_config:
+  model: Qwen2.5-VL-32B
+  model_dir: /sxs/zhoufei/vLLM/models/Qwen2.5-VL-32B
+  device: gpu:0
+  service_url: http://172.16.15.10:30109/v1
+  pdf_max_pages: 10 # pdf处理最大页数
+
+# 结果数据库配置
+results_db_config:
+  db_name: "./database/audit_results.db"
+
+# 其他配置
+logging_config:
+  level: INFO
+  file: ./logs

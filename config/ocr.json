@@ -1,0 +1,17 @@
+{
+    "file_name": "file1.pdf",
+    "content":[
+      {
+        "type": "text",
+        "title": "文档标题",
+        "text": "这里是文档的文本内容...是markdown的格式",
+        "page_idx": 0
+      },
+      {
+        "type": "table",
+        "table_caption": "表格的标题",
+        "table_body": "这里是表格的内容...是HTML的格式",
+        "page_idx": 1
+      }
+    ]
+}
