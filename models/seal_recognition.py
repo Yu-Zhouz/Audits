@@ -82,7 +82,6 @@ class SealExtractor:
             image.save(image_path, "JPEG")
             image_paths.append(image_path)
 
-        # TODO: 指定最大页数,限制最大页数
         if self.pdf_max_pages is not None:
             image_paths = image_paths[:self.pdf_max_pages]
 
