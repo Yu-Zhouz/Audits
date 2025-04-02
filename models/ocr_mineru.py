@@ -125,10 +125,11 @@ class MinerUOCR:
             elif item["type"] == "table":
                 # 检查 table_caption 是否为空
                 table_caption = item.get("table_caption", [""])[0] if item.get("table_caption") else ""
+                table_body = item.get("table_body", "")  # 如果不存在，返回空列表
                 llm_json["content"].append({
                     "type": "table",
                     "table_caption": table_caption,  # 提取表格标题
-                    "table_body": item["table_body"],  # 表格内容
+                    "table_body": table_body,  # 表格内容
                     "page_idx": item["page_idx"]
                 })
 
@@ -192,10 +193,13 @@ if __name__ == "__main__":
     config = load_config()
     processor = MinerUOCR(config)
 
+    # files = [
+    #     "./data_test/8d1c1ff1-d6f2-4889-b8c9-17f52052cd22.pdf",
+    #     "./data_test/2810号.pdf",
+    #     "./data_test/img_v3_02kc_6e2bade0-a0ed-4529-8dfa-db73f379354g.jpg"  # 添加图像文件测试
+    # ]
     files = [
-        "./data_test/8d1c1ff1-d6f2-4889-b8c9-17f52052cd22.pdf",
-        "./data_test/2810号.pdf",
-        "./data_test/img_v3_02kc_6e2bade0-a0ed-4529-8dfa-db73f379354g.jpg"  # 添加图像文件测试
+        "../test/test_output/1321887604311851008/惠东县发展和改革局关于白盆珠镇丝路茶韵稻田文化风情街建设项目可行性研究报告的批复.pdf"
     ]
     merged = []
     for file_path in files:
