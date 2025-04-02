@@ -10,8 +10,12 @@ export VLLM_HOST_IP=$(hostname -I | awk '{print $1}')    # 获取本机 IP 地�
 export PORT=8000   # 设置端口
 export LOG_FILE="../logs/llm_qwq.log"  # 设置日志文件路径
 
-# 检查日志文件是否存在，不存在则创建
-if [ ! -f "$LOG_FILE" ]; then
+# 检查日志文件是否存在
+if [ -f "$LOG_FILE" ]; then
+    # 清空日志文件
+    echo -n "" > "$LOG_FILE"
+else
+    # 创建日志文件
     touch "$LOG_FILE"
 fi
 
