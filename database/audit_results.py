@@ -4,7 +4,7 @@
 @FileName: audit_results.py
 @Time    : 2025/3/18 下午5:55
 @Author  : ZhouFei
-@Email   : zhoufei.net@outlook.com
+@Email   : zhoufei.net@gmail.com
 @Desc    : 用于将模型识别的字典结果储存到数据库
 @Usage   : 字典示例
 {

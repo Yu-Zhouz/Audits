@@ -4,7 +4,7 @@
 @FileName: vlm_extraction.py
 @Time    : 2025/3/20 上午9:35
 @Author  : ZhouFei
-@Email   : zhoufei.net@outlook.com
+@Email   : zhoufei.net@gmail.com
 @Desc    : 利用vlm大模型Qwen/Qwen2.5-VL-7B-Instruct完成图像和pdf信息的抽取
 @Usage   : prompt接口参考https://www.cnblogs.com/fasterai/p/18553752， Prompt构建参考https://github.com/Acmesec/PromptJailbreakManual?tab=readme-ov-file#prompt%E7%BC%96%E5%86%99%E6%96%B9%E6%B3%95%E6%80%BB%E7%BB%93
 """

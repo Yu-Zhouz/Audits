@@ -4,7 +4,7 @@
 @FileName: ocr_mineru.py
 @Time    : 2025/3/12 上午10:10
 @Author  : ZhouFei
-@Email   : zhoufei.net@outlook.com
+@Email   : zhoufei.net@gmail.com
 @Desc    : 使用 MinerU 框架将 PDF 或图像文件转换为 Markdown 和 JSON 格式
 @Usage   : https://mineru.readthedocs.io/en/latest/user_guide/usage/api.html
 """

@@ -4,7 +4,7 @@
 @FileName: main.py
 @Time    : 2025/3/12 上午11:36
 @Author  : ZhouFei
-@Email   : zhoufei.net@outlook.com
+@Email   : zhoufei.net@gmail.com
 @Desc    : 主函数
 @Usage   :
 """

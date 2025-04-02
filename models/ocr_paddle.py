@@ -4,7 +4,7 @@
 @FileName: ocr_paddle.py
 @Time    : 2025/3/12 下午6:13
 @Author  : ZhouFei
-@Email   : zhoufei.net@outlook.com
+@Email   : zhoufei.net@gmail.com
 @Desc    : OCR 处理脚本，调用 PaddleOCR 框架，使用 PaddleX 框架的 OCR 完成图像和 PDF 的文字提取为 JSON 格式
 @Usage   :
 """

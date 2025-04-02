@@ -4,8 +4,8 @@
 @FileName: workflow_ultra.py.py
 @Time    : 2025/3/23 下午8:28
 @Author  : ZhouFei
-@Email   : zhoufei.net@outlook.com
-@Desc    : 使用VLM和MinerU的多模态和文本的双工作流
+@Email   : zhoufei.net@gmail.com
+@Desc    : 使用VLM和MinerU的多模态和MinerU文本的双工作流
 @Usage   :
 """
 import copy

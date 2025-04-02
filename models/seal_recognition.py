@@ -4,7 +4,7 @@
 @FileName: seal_recognition.py
 @Time    : 2025/3/12 上午11:01
 @Author  : ZhouFei
-@Email   : zhoufei.net@outlook.com
+@Email   : zhoufei.net@gmail.com
 @Desc    : 使用 PaddleX 框架的印章识别产线检测佐证材料中的印章
 @Usage   : 提取印章内容并判断是否包含合法公章
 """

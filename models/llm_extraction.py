@@ -4,7 +4,7 @@
 @FileName: llm_extraction.py
 @Time    : 2025/3/12 上午11:03
 @Author  : ZhouFei
-@Email   : zhoufei.net@outlook.com
+@Email   : zhoufei.net@gmail.com
 @Desc    : 调用 vLLM 框架的QwQ-32B模型用于提取文本信息为固定的json格式输出。
 @Usage   :
 """

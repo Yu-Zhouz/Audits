@@ -4,7 +4,7 @@
 @FileName: api.py
 @Time    : 2025/3/18 下午5:31
 @Author  : ZhouFei
-@Email   : zhoufei.net@outlook.com
+@Email   : zhoufei.net@gmail.com
 @Desc    : api接口
 @Usage   :
 """

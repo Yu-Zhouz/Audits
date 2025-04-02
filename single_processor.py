@@ -4,7 +4,7 @@
 @FileName: single_processor.py
 @Time    : 2025/3/31 下午6:36
 @Author  : ZhouFei
-@Email   : zhoufei.net@outlook.com
+@Email   : zhoufei.net@gmail.com
 @Desc    : 单ID或ID列表处理器
 @Usage   :
 """

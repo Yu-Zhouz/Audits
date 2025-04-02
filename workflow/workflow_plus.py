@@ -4,8 +4,8 @@
 @FileName: workflow_plus.py
 @Time    : 2025/3/21 下午4:09
 @Author  : ZhouFei
-@Email   : zhoufei.net@outlook.com
-@Desc    : 
+@Email   : zhoufei.net@gmail.com
+@Desc    : 使用VLM和MinerU的多模态和MinerU文本和PaddleOCR的三工作流
 @Usage   :
 """
 import copy
@@ -62,7 +62,7 @@ class Workflow(Base_Workflow):
             # 开始对结果进行后处理合并
             logging.info("开始对结果进行后处理！")
             self._many_results(vlm_results)
-            empty_count = self.post_process(seal_results, vlm_results)
+            empty_count = sum(1 for value in self.results_dict.values() if value is None or value == "")
             if empty_count > self.max_empty_count:
                 for input_path in input_paths:
                     # 防止上下文过长,每次重新初始化一个VLM模型

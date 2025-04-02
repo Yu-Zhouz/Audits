@@ -4,7 +4,7 @@
 @FileName: workflow_lite.py.py
 @Time    : 2025/3/23 下午8:28
 @Author  : ZhouFei
-@Email   : zhoufei.net@outlook.com
+@Email   : zhoufei.net@gmail.com
 @Desc    : 使用VLM和MinerU和PaddleX文本处理双工作流
 @Usage   :
 """

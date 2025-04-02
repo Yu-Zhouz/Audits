@@ -4,7 +4,7 @@
 @FileName: utils.py
 @Time    : 2025/3/12 下午2:14
 @Author  : ZhouFei
-@Email   : zhoufei.net@outlook.com
+@Email   : zhoufei.net@gmail.com
 @Desc    : 
 @Usage   :
 """

@@ -4,7 +4,7 @@
 @FileName: download_data.py
 @Time    : 2025/3/17 下午4:46
 @Author  : ZhouFei
-@Email   : zhoufei.net@outlook.com
+@Email   : zhoufei.net@gmail.com
 @Desc    : 从数据库下载指定id的佐证材料
 @Usage   : python download_data.py --id 1227190829324435458 --output ./test_output
 """

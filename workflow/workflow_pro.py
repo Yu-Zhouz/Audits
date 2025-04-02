@@ -4,7 +4,7 @@
 @FileName: workflow_pro.py
 @Time    : 2025/3/18 下午2:26
 @Author  : ZhouFei
-@Email   : zhoufei.net@outlook.com
+@Email   : zhoufei.net@gmail.com
 @Desc    : 使用LLM和MinerU和PaddleX的图像和文本双工作流
 @Usage   :
 """

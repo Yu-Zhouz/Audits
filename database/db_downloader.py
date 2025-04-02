@@ -4,7 +4,7 @@
 @FileName: db_downloader.py.py
 @Time    : 2025/3/24 上午9:56
 @Author  : ZhouFei
-@Email   : zhoufei.net@outlook.com
+@Email   : zhoufei.net@gmail.com
 @Desc    : 数据库单线程下载类
 @Usage   :
 """

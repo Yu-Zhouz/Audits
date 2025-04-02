@@ -4,10 +4,11 @@
 @FileName: db_downloader_mt.py.py
 @Time    : 2025/3/24 上午9:56
 @Author  : ZhouFei
-@Email   : zhoufei.net@outlook.com
+@Email   : zhoufei.net@gmail.com
 @Desc    : 数据库多线程下载类
 @Usage   :
 """
+import datetime
 import threading
 import time
 import logging
@@ -146,7 +147,7 @@ class DataDownloader:
             if not self.connection or not self.cursor:
                 self.connect_db()
 
-            sql = "SELECT MAX(y.CREATE_TIME_) AS LATEST_TIME FROM hzxc.YSWFTB y WHERE y.SFWFTB = '2' AND DQHJ = '市两违办核查'"
+            sql = "SELECT MAX(y.UPDATE_TIME_) AS LATEST_TIME FROM hzxc.YSWFTB y WHERE y.SFWFTB = '2' AND DQHJ = '市两违办核查'"
             self.cursor.execute(sql)
             result = self.cursor.fetchone()
             self.cursor.close()
@@ -163,19 +164,20 @@ class DataDownloader:
                 self.connect_db()
 
             sql = """
-            SELECT y.ID, y.TU_BAN_BIAN_HAO_, y.TU_BIAO_ZUO_LAO_, y.CREATE_TIME_,
+            SELECT y.ID, y.TU_BAN_BIAN_HAO_, y.TU_BIAO_ZUO_LAO_, y.UPDATE_TIME_,
                    y.MJ, x.XZLWDD, x.CDTBLX, x.ZDMJ, x.YDMJ, x.DSR, x.JSMJ, x.SCZZCL 
             FROM hzxc.YSWFTB y 
             LEFT JOIN hzxc.XCGKQK x ON x.PARENT_ID_ = y.id 
             WHERE y.SFWFTB = '2' AND DQHJ = '市两违办核查'
             """
-            params = {}
-            if last_check_time is not None:  # 确保 last_check_time 不为 None
-                sql += " AND y.CREATE_TIME_ > :last_check_time"
-                params = {'last_check_time': last_check_time}
-            sql += " ORDER BY y.CREATE_TIME_"
+            if last_check_time is not None:
+                # 确保 last_check_time 是字符串格式
+                last_check_time_str = last_check_time.strftime("%Y-%m-%d %H:%M:%S") if isinstance(last_check_time,
+                                                                                                  datetime.datetime) else last_check_time
+                sql += f" AND y.UPDATE_TIME_ > TO_DATE('{last_check_time_str}', 'YYYY-MM-DD HH24:MI:SS')"
+            sql += " ORDER BY y.UPDATE_TIME_ DESC"
 
-            self.cursor.execute(sql, params)
+            self.cursor.execute(sql)
             columns = [col[0] for col in self.cursor.description]
             rows = self.cursor.fetchall()
             self.cursor.close()
@@ -197,19 +199,19 @@ class DataDownloader:
 
             # 返回最后一条记录的时间
             if rows:  # 如果有记录，返回最后一条记录的时间
-                max_create_time = max(row['CREATE_TIME_'] for row in rows)
+                max_update_time = max(row['UPDATE_TIME_'] for row in rows)
+                logging.info(f"已下载 {len(rows)} 条新增数据，获取最新时间戳: {max_update_time}")
             else:
-                # 如果没有记录，获取数据库中所有记录的最晚时间戳
-                max_create_time = self.get_latest_create_time() or last_check_time
+                logging.info(f"查询结束，没有新增数据")
+                max_update_time = last_check_time
 
-            return max_create_time
+            return max_update_time
 
         except Exception as e:
             logging.error(f"下载任务时出错: {str(e)}")
             self.reconnect_db()
-            # 如果下载出错，获取数据库中所有记录的最晚时间戳
-            latest_time = self.get_latest_create_time()
-            return latest_time if latest_time is not None else last_check_time
+            # 如果下载出错，返回原始时间戳
+            return last_check_time
 
     def download(self, id_list=None):
         """
@@ -221,7 +223,7 @@ class DataDownloader:
                 self.connect_db()
 
             id_str = ", ".join(f"'{id}'" for id in id_list)
-            sql = f"""SELECT y.ID,y.TU_BAN_BIAN_HAO_,y.CREATE_TIME_,y.TU_BIAO_ZUO_LAO_,y.MJ,x.XZLWDD,
+            sql = f"""SELECT y.ID,y.TU_BAN_BIAN_HAO_,y.UPDATE_TIME_,y.TU_BIAO_ZUO_LAO_,y.MJ,x.XZLWDD,
             x.CDTBLX,x.ZDMJ,x.YDMJ,x.DSR,x.JSMJ,x.SCZZCL FROM hzxc.YSWFTB y LEFT JOIN  hzxc.XCGKQK x ON 
             x.PARENT_ID_ = y.id WHERE y.SFWFTB = '2' AND y.ID IN ({id_str})"""
 

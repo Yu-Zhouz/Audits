@@ -4,7 +4,7 @@
 @FileName: workflow_mini.py
 @Time    : 2025/3/21 下午4:07
 @Author  : ZhouFei
-@Email   : zhoufei.net@outlook.com
+@Email   : zhoufei.net@gmail.com
 @Desc    : 只使用VLM模型单条流
 @Usage   :
 """

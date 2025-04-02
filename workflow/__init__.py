@@ -4,7 +4,7 @@
 @FileName: __init__.py.py
 @Time    : 2025/3/23 下午8:29
 @Author  : ZhouFei
-@Email   : zhoufei.net@outlook.com
+@Email   : zhoufei.net@gmail.com
 @Desc    : 
 @Usage   :
 """

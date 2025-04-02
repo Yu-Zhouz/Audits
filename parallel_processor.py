@@ -4,7 +4,7 @@
 @FileName: parallel_processor.py.py
 @Time    : 2025/3/24 下午6:03
 @Author  : ZhouFei
-@Email   : zhoufei.net@outlook.com
+@Email   : zhoufei.net@gmail.com
 @Desc    : 
 @Usage   :
 """
@@ -66,10 +66,9 @@ class ParallelProcessor:
         logger.info("下载线程已启动")
         while self.running:
             try:
-                # 如果需要处理初始数据，并且这是第一次运行，则不传入 last_check_time
                 logging.info(
                     f"上次检查时间: {self.last_check_time}, 当前时间: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')} 开始检查...")
-                # TODO:判断条件
+                # 判断条件
                 if self.process_initial_data and self.last_check_time is None:
                     logging.info("正在处理初始数据...")
                     max_create_time = self.downloader.start_download(self.last_check_time)
@@ -83,13 +82,13 @@ class ParallelProcessor:
                     self.process_initial_data = False  # 只处理一次初始数据
                 else:
                     max_create_time = self.downloader.start_download(self.last_check_time)
-                    if max_create_time is not None:
+                    if max_create_time != self.last_check_time:
                         logging.info(f"发现新数据，更新时间戳: {max_create_time}")
                         self.last_check_time = max_create_time
                         # 保存时间戳到文件
                         self.save_last_check_time(max_create_time)
                     else:
-                        logging.warning(f"增量数据处理未返回有效的时间戳, 当前时间戳 {self.last_check_time}")
+                        logging.info(f"没有新增数据，时间戳 {max_create_time} 保持不变，等待下一次检查...")
             except Exception as e:
                 logging.error(f"下载任务时出错: {str(e)}")
             # 定时扫描，例如每分钟扫描一次
@@ -120,15 +119,13 @@ class ParallelProcessor:
                         logging.info(f"任务 {task_id} 的结果已保存到数据库, 用时 {time_end - time_start}")
                     else:
                         logging.warning(f"任务 {task_id} 没有返回结果")
-                    # 关闭数据库连接
-                    database.close()
                     # 标记任务完成
                     self.downloader.task_done()
                     # 删除数据
                     if self.delete:
                         self.delete_data(task_id)
                 except Exception as e:
-                    logging.error(f"处理任务时出错: {str(e)}")
+                    logging.error(f"处理任务 {task_id} 时出错: {str(e)}")
                     # 如果处理失败，将任务重新放回队列
                     self.downloader.add_task(task_id, file_paths)
             else:
