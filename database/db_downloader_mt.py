@@ -141,23 +141,6 @@ class DataDownloader:
                     self.task_queue.put((record_id, file_paths))
                     self.processed_tasks.add(record_id)
 
-    def get_latest_create_time(self):
-        """获取数据库中所有记录的最晚时间戳"""
-        try:
-            if not self.connection or not self.cursor:
-                self.connect_db()
-
-            sql = "SELECT MAX(y.UPDATE_TIME_) AS LATEST_TIME FROM hzxc.YSWFTB y WHERE y.SFWFTB = '2' AND DQHJ = '市两违办核查'"
-            self.cursor.execute(sql)
-            result = self.cursor.fetchone()
-            self.cursor.close()
-
-            return result[0]  # 返回最晚时间戳
-        except Exception as e:
-            logging.error(f"获取最晚时间戳时出错: {str(e)}")
-            self.reconnect_db()
-            return None
-
     def download_with_threading(self, last_check_time=None):
         try:
             if not self.connection or not self.cursor:
@@ -205,7 +188,8 @@ class DataDownloader:
             time_end = time.time()
 
             # 返回最后一条记录的时间
-            max_update_time = max(row['UPDATE_TIME_'] for row in rows)
+            update_time_index = columns.index('UPDATE_TIME_')
+            max_update_time = max(row[update_time_index] for row in rows)
             logging.info(f"已下载 {len(rows)} 条新增数据，获取最新时间戳: {max_update_time} , 用时 {time_end - time_start}")
 
             return max_update_time
