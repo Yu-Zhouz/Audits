@@ -182,6 +182,12 @@ class DataDownloader:
             rows = self.cursor.fetchall()
             self.cursor.close()
 
+            # 检查是否有新增数据
+            if not rows:
+                logging.info(f"查询结束，没有新增数据")
+                return last_check_time
+
+            time_start = time.time()
             # 创建任务队列并填充记录
             task_queue = queue.Queue()
             for row in rows:
@@ -196,14 +202,11 @@ class DataDownloader:
 
             # 等待队列处理完成
             task_queue.join()
+            time_end = time.time()
 
             # 返回最后一条记录的时间
-            if rows:  # 如果有记录，返回最后一条记录的时间
-                max_update_time = max(row['UPDATE_TIME_'] for row in rows)
-                logging.info(f"已下载 {len(rows)} 条新增数据，获取最新时间戳: {max_update_time}")
-            else:
-                logging.info(f"查询结束，没有新增数据")
-                max_update_time = last_check_time
+            max_update_time = max(row['UPDATE_TIME_'] for row in rows)
+            logging.info(f"已下载 {len(rows)} 条新增数据，获取最新时间戳: {max_update_time} , 用时 {time_end - time_start}")
 
             return max_update_time
 
