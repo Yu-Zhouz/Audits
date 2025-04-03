@@ -57,7 +57,8 @@ Audits
 ## 安装
 
 ```bash
-pip install oracledb Flask
+pip install addict cx-oracle addict oracledb pdf2image scripts stua Flask gevent
+
 ```
 
 

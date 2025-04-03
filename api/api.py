@@ -12,7 +12,7 @@ import os
 import sys
 import oracledb
 from flask import Flask, request, jsonify
-
+from gevent import pywsgi
 
 
 # 获取项目根目录
@@ -84,4 +84,7 @@ def get_data():
 
 
 if __name__ == '__main__':
-    app.run(host=FLASK_HOST, port=FLASK_PORT, debug=True)
+    # app.run(host=FLASK_HOST, port=FLASK_PORT, debug=True)
+    # 生产部署使用 gevent 的 WSGIServer 启动 Flask 应用
+    server = pywsgi.WSGIServer((FLASK_HOST, FLASK_PORT), app)
+    server.serve_forever()
