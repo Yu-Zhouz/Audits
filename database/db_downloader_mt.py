@@ -159,10 +159,14 @@ class DataDownloader:
                 sql += f" AND y.UPDATE_TIME_ > TO_DATE('{last_check_time_str}', 'YYYY-MM-DD HH24:MI:SS')"
             sql += " ORDER BY y.UPDATE_TIME_ DESC"
 
-            self.cursor.execute(sql)
-            columns = [col[0] for col in self.cursor.description]
-            rows = self.cursor.fetchall()
-            self.cursor.close()
+            # 为了线程安全重新创建一个新的游标
+            cursor = self.connection.cursor()
+            cursor.execute(sql)
+            columns = [col[0] for col in cursor.description]
+            rows = cursor.fetchall()
+
+            # 关闭游标
+            cursor.close()
 
             # 检查是否有新增数据
             if not rows:

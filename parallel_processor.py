@@ -59,7 +59,7 @@ class ParallelProcessor:
         timestamp_str = timestamp.strftime('%Y-%m-%d %H:%M:%S') if isinstance(timestamp, datetime) else str(timestamp)
         with open(self.timestamp_file, "w") as file:
             file.write(timestamp_str)
-        logging.info(f"保存上次检查时间到文件: {timestamp_str}")
+        logging.info(f"保存时间戳到文件: {timestamp_str}")
 
     def download_task(self):
         """定期扫描数据库并下载新增任务"""
@@ -68,7 +68,7 @@ class ParallelProcessor:
         while self.running:
             try:
                 logging.info(
-                    f"上次检查时间: {self.last_check_time}, 当前时间: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')} 开始检查...")
+                    f"上次检查的时间戳: {self.last_check_time}, {datetime.now().strftime('%Y-%m-%d %H:%M:%S')} 重新开始检查...")
                 # 判断条件
                 if self.process_initial_data and self.last_check_time is None:
                     logging.info("正在处理初始数据...")
@@ -132,7 +132,7 @@ class ParallelProcessor:
             else:
                 # 如果队列为空，等待一段时间
                 logging.info("队列为空，等待中...")
-                wait_time = max(0, self.scan_interval - 3)  # 确保等待时间不为负数
+                wait_time = self.scan_interval // 2
                 time.sleep(wait_time)
     def start(self):
         # 启动下载线程
