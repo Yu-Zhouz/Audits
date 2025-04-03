@@ -31,7 +31,6 @@ class DataDownloader:
         self.lock = threading.Lock()
         self.retries = self.db_config.get("retries", 3)
         self.num_threads = self.db_config.get("num_threads", 16)
-        self.scan_interval = self.db_config.get("scan_interval", 300)   # 定义扫描时间
         self.connection = None  # 数据库
         self.cursor = None  # 游标
         self.download_threads = []  # 线程列表

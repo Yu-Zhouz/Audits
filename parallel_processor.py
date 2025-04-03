@@ -14,7 +14,7 @@ import shutil
 import threading
 import time
 from datetime import datetime
-from utils import setup_logging
+from utils import setup_logging, get_scan_interval
 from database import DataDownloader
 from database.audit_results import AuditDatabase
 from workflow import get_workflow
@@ -29,6 +29,7 @@ class ParallelProcessor:
         self.timestamp_file = config.get("workflow_config", {}).get("last_check_time")  # 保存时间戳的文件名
         self.logger = setup_logging(config, log_name='audits')  # 日志记录器
         self.task_queue = self.downloader.get_task_queue()  # 使用 DataDownloader 的任务队列
+        self.scan_interval = get_scan_interval(self.config)  # 使用时间扫描函数获取当前扫描间隔
         self.last_check_time = None
         self.running = True
         self.process_initial_data = process_initial_data  # 是否处理初始数据
@@ -91,9 +92,9 @@ class ParallelProcessor:
                         logging.info(f"没有新增数据，时间戳 {max_create_time} 保持不变，等待下一次检查...")
             except Exception as e:
                 logging.error(f"下载任务时出错: {str(e)}")
-            # 定时扫描，例如每分钟扫描一次
-            time.sleep(self.downloader.scan_interval)
-            logging.info(f"下次检查将在 {self.downloader.scan_interval} 秒后...")
+            # 使用时间扫描函数获取当前扫描间隔
+            logging.info(f"下次检查将在 {self.scan_interval} 秒后...")
+            time.sleep(self.scan_interval)
 
     def process_task(self):
         """处理任务队列中的任务"""
@@ -131,8 +132,8 @@ class ParallelProcessor:
             else:
                 # 如果队列为空，等待一段时间
                 logging.info("队列为空，等待中...")
-                time.sleep(self.downloader.scan_interval/10)
-
+                wait_time = max(0, self.scan_interval - 3)  # 确保等待时间不为负数
+                time.sleep(wait_time)
     def start(self):
         # 启动下载线程
         download_thread = threading.Thread(target=self.download_task, daemon=True)

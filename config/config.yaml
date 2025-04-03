@@ -12,7 +12,7 @@ db_download_config:
   sid: 'orcl'
   retries: 3 # 数据库连接重试次数
   num_threads: 16  # 线程数
-  scan_interval: 300   # 扫描间隔时间，单位为秒
+  scan_interval: [[9, 18 , 300], [18, 9, 3600]]   # 扫描间隔时间：开始时间、结束时间和扫描间隔，单位为秒
 
 workflow_config:
   workflow_type: "ultra"  # 可选择 ["mini", "lite", "ultra", "pro", "plus"]

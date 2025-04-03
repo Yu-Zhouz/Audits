@@ -84,3 +84,20 @@ def setup_logging(config, log_name='api'):
 
     logger.info(f"{log_name} 日志已初始化，级别为 {logging.getLevelName(level)}。")
     return logger
+
+
+def get_scan_interval(config):
+    """根据当前时间返回扫描间隔"""
+    current_hour = datetime.now().hour
+    scan_intervals = config.get("db_download_config", {}).get("scan_interval", [])
+    default_interval = 60  # 默认扫描间隔（秒）
+
+    for interval in scan_intervals:
+        start_hour, end_hour, interval_seconds = interval
+        if start_hour <= end_hour:
+            if start_hour <= current_hour < end_hour:
+                return interval_seconds
+        else:
+            if start_hour <= current_hour or current_hour < end_hour:
+                return interval_seconds
+    return default_interval
