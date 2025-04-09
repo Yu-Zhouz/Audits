@@ -20,7 +20,7 @@ project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 sys.path.append(project_root)
 
 from utils import load_config
-from database import get_audit_result
+from database import query_data, query_data_by_ids
 
 # 加载配置文件
 config = load_config()
@@ -48,21 +48,8 @@ def get_db_connection():
     return conn
 
 
-# 查询数据
-def query_data(task_id):
-    try:
-        # 使用 audit_results.py 中的 get_audit_result 函数查询 SQLite 数据库
-        result = get_audit_result(config, task_id)
-        if result:
-            return result
-        else:
-            return None
-    except Exception as e:
-        print(f"查询过程中发生错误: {e}")
-        return None
 
-
-# Flask 路由
+# Flask 路由, 用于获取单个数据
 @app.route('/api', methods=['GET', 'POST'])
 def get_data():
     task_id = request.args.get('id')  # 从 GET 请求的查询参数获取 id
@@ -76,11 +63,27 @@ def get_data():
     # 打印请求的 IP 地址
     print(f"请求的 IP 地址: {request.remote_addr}， 响应的 task_id {task_id}")
 
-    data = query_data(task_id)
-    if data:
-        return jsonify(data)
-    else:
-        return jsonify({"error": "Data not found"}), 404
+    data = query_data(config, task_id)
+    return jsonify(data)  # 如果查询不到数据，返回 None
+
+# Flask 路由, 用于获取多个数据
+@app.route('/api/bulk', methods=['GET', 'POST'])
+def get_bulk_data():
+    # 从 GET 请求的查询参数获取 ids
+    task_ids = request.args.getlist('ids')  # 支持多个 ids 参数
+    if not task_ids:
+        # 从 POST 请求的 JSON 数据中获取 ids
+        task_ids = request.json.get('ids') if request.json else None
+
+    # 如果仍然没有获取到 task_ids，返回错误
+    if not task_ids:
+        return jsonify({"error": "Missing 'ids' parameter"}), 400
+
+    # 打印请求的 IP 地址
+    print(f"请求的 IP 地址: {request.remote_addr}， 响应的 task_ids {task_ids}")
+
+    data = query_data_by_ids(config, task_ids)
+    return jsonify(data)  # 如果查询不到数据，返回空列表
 
 
 if __name__ == '__main__':

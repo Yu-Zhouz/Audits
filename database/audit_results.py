@@ -111,6 +111,7 @@ class AuditDatabase:
                     "ZDMJ": row[5],            # "占地面积"
                     "JZMJ": row[6],            # "建筑面积"
                 }
+                else:
                     return None
             except Exception as e:
                 print(f"查询异常: {e}")
@@ -118,6 +119,41 @@ class AuditDatabase:
             finally:
                 cursor.close()
 
+    def query_data_by_ids(self, task_ids: list) -> list:
+        """根据多个 task_id 获取审计结果"""
+        with self.lock:  # 使用锁确保线程安全
+            cursor = self.conn.cursor()
+            try:
+                # 构造 SQL 查询语句
+                placeholders = ", ".join(["?"] * len(task_ids))
+                query = f"SELECT * FROM data_results WHERE id IN ({placeholders})"
+                cursor.execute(query, task_ids)
+                rows = cursor.fetchall()
+
+                # 将查询结果转换为字典列表
+                result_map = {}  # 使用字典存储查询结果，键为 ID
+                for row in rows:
+                    result_map[row[0]] = {
+                        "ID": row[0],
+                        # "GZ": bool(row[1]),        # "公章"
+                        "DSR": row[2],  # "当事人"
+                        "TBBH": row[3],  # "图斑编号"
+                        "JZCS": row[4],  # "建筑层数"
+                        "ZDMJ": row[5],  # "占地面积"
+                        "JZMJ": row[6],  # "建筑面积"
+                    }
+
+                # 按照输入的 task_ids 顺序返回结果，不存在的 ID 返回 None
+                results = []
+                for task_id in task_ids:
+                    results.append(result_map.get(task_id, None))
+
+                return results
+            except Exception as e:
+                print(f"查询异常: {e}")
+                return []
+            finally:
+                cursor.close()
     def close(self):
         self.conn.close()
 
@@ -135,42 +171,60 @@ def store_audit_result(config: Dict, data: Dict):
     # 关闭数据库连接
     db.close()
 
-def get_audit_result(config: Dict, task_id: str) -> Optional[Dict]:
+
+# 单id查询数据
+def query_data(config, task_id):
     """根据 task_id 获取审计结果"""
     # 初始化数据库
     db = AuditDatabase(config)
     try:
         result = db.query_data(task_id)
-        return result
+        if result:
+            return result
+        else:
+            return None
     except Exception as e:
         print(f"查询过程中发生错误: {e}")
         return None
     finally:
         db.close()
 
+# 多ID查询数据
+def query_data_by_ids(config, task_ids):
+    # 初始化数据库
+    db = AuditDatabase(config)
+    try:
+        # 使用 audit_results.py 中的 query_data_by_ids 函数查询 SQLite 数据库
+        result = db.query_data_by_ids(task_ids)
+        if result:
+            return result
+        else:
+            return None
+    except Exception as e:
+        print(f"查询过程中发生错误: {e}")
+        return []
+    finally:
+        db.close()
 
-# 测试代码
-if __name__ == "__main__":
-    # 示例数据
-    data = {
-        "id": "122222224558489",
-        "公章": True,
-        "当事人": "五六",
-        "图斑编号": "HZJGZW202401-441322122510Z0006",
-        "建筑层数": 3,
-        "占地面积": 123,
-        "建筑面积": 200
-    }
 
-    config = {
-        "results_db_config": {
-            "db_name": "../database/audit_results.db"
-        }
-    }
-
-    # 调用封装的函数
-    store_audit_result(config, data)
-
-    # 查询测试
-    result = get_audit_result(config, "122222224558489")
-    print(result)
+# # 测试代码
+# if __name__ == "__main__":
+#     # 示例数据
+#     data = {
+#         "id": "122222224558489",
+#         "公章": True,
+#         "当事人": "五六",
+#         "图斑编号": "HZJGZW202401-441322122510Z0006",
+#         "建筑层数": 3,
+#         "占地面积": 123,
+#         "建筑面积": 200
+#     }
+#
+#     config = {
+#         "results_db_config": {
+#             "db_name": "../database/audit_results.db"
+#         }
+#     }
+#
+#     # 调用封装的函数
+#     store_audit_result(config, data)
