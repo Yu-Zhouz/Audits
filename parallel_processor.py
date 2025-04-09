@@ -93,6 +93,7 @@ class ParallelProcessor:
             except Exception as e:
                 logging.error(f"下载任务时出错: {str(e)}")
             # 使用时间扫描函数获取当前扫描间隔
+            self.scan_interval = get_scan_interval(self.config)  # 动态更新扫描间隔
             logging.info(f"下次检查将在 {self.scan_interval} 秒后...")
             time.sleep(self.scan_interval)
 
