@@ -104,7 +104,7 @@ class AuditDatabase:
                 if row:
                     return {
                     "ID": row[0],
-                    "GZ": bool(row[1]),        # "公章"
+                    # "GZ": bool(row[1]),        # "公章"
                     "DSR": row[2],             # "当事人"
                     "TBBH": row[3],            # "图斑编号"
                     "JZCS": row[4],            # "建筑层数"
