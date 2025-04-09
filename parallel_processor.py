@@ -103,6 +103,7 @@ class ParallelProcessor:
         logger.info("处理线程已启动")
         # 为每个线程创建独立的数据库连接
         database = AuditDatabase(self.config)
+        first_scan = True  # 添加一个标志，用于判断是否是第一次扫描
         while self.running:
             if not self.task_queue.empty():
                 try:
@@ -132,8 +133,12 @@ class ParallelProcessor:
                     self.downloader.add_task(task_id, file_paths)
             else:
                 # 如果队列为空，等待一段时间
-                logging.info("队列为空，等待中...")
-                wait_time = self.scan_interval // 2
+                if first_scan:
+                    wait_time = 3  # 第一次扫描等待10秒
+                    first_scan = False  # 标志设置为False，后续不再使用3秒等待
+                else:
+                    wait_time = self.scan_interval // 2
+                logging.info(f"队列为空，等待 {wait_time} 秒...")
                 time.sleep(wait_time)
     def start(self):
         # 启动下载线程
