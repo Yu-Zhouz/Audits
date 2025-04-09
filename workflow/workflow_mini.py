@@ -28,7 +28,6 @@ class Workflow(Base_Workflow):
         :param task_queue: 任务队列
         :return:
         """
-        # results_list = []
         logging.getLogger("httpx").setLevel(logging.WARNING)  # 如果使用httpx
         for task_id, input_paths in task_queue.items():
             # TODO: 每个任务需要重新初始化模型，因为每个任务是一个独立的对话
@@ -41,7 +40,8 @@ class Workflow(Base_Workflow):
                 "当事人": None,
                 "图斑编号": None,
                 "建筑层数": None,
-                "占地面积": None
+                "占地面积": None,
+                "建筑面积": None
             }
 
             vlm_results = [] # 存储vlm结果
@@ -56,12 +56,5 @@ class Workflow(Base_Workflow):
             # 开始对结果进行后处理合并
             logging.info(f"开始对 {task_id} 结果进行后处理！")
             self._many_results(vlm_results)
-            # results_list.append(self.results_dict)
-
-        # 将results字典的户主k改为当事人
-        # if self.results_dict:
-        #     for key in list(self.results_dict.keys()):
-        #         if key == '户主':
-        #             self.results_dict['当事人'] = self.results_dict.pop('户主')
 
         return self.results_dict

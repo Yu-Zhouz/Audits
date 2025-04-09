@@ -24,7 +24,8 @@ class Base_Workflow:
                 "当事人": None,
                 "图斑编号": None,
                 "建筑层数": None,
-                "占地面积": None
+                "占地面积": None,
+                "建筑面积": None
             }
 
     def init_models(self):

@@ -13,7 +13,8 @@
   "当事人": "张三",
   "图斑编号": "HZJGZW202401-441322122510Z0006",
   "建筑层数": 3,
-  "占地面积": 120
+  "占地面积": 120,
+  "建筑面积": 200,
 }
 """
 import logging
@@ -47,7 +48,8 @@ class AuditDatabase:
             当事人 TEXT,
             图斑编号 TEXT,
             建筑层数 INTEGER,
-            占地面积 INTEGER
+            占地面积 INTEGER,
+            建筑面积 INTEGER
         )
         """)
         self.conn.commit()
@@ -57,24 +59,25 @@ class AuditDatabase:
             cursor = self.conn.cursor()
             try:
                 cursor.execute("""
-                INSERT INTO data_results (id, 公章, 当事人, 图斑编号, 建筑层数, 占地面积)
-                VALUES (?, ?, ?, ?, ?, ?)
+                INSERT INTO data_results (id, 公章, 当事人, 图斑编号, 建筑层数, 占地面积, 建筑面积)
+                VALUES (?, ?, ?, ?, ?, ?, ?)
                 """, (
                     data["id"],
                     data["公章"],
                     data["当事人"],
                     data["图斑编号"],
                     data["建筑层数"],
-                    data["占地面积"]
+                    data["占地面积"],
+                    data["建筑面积"]
                 ))
                 self.conn.commit()
                 logging.info("数据插入成功！")
             except sqlite3.IntegrityError:
-                logging.info("插入数据失败，尝试更新数据...")
+                logging.info("已存在id，更新数据...")
                 try:
                     cursor.execute("""
                     UPDATE data_results
-                    SET 公章 = ?, 当事人 = ?, 图斑编号 = ?, 建筑层数 = ?, 占地面积 = ?
+                    SET 公章 = ?, 当事人 = ?, 图斑编号 = ?, 建筑层数 = ?, 占地面积 = ?, 建筑面积 = ?
                     WHERE id = ?
                     """, (
                         data["公章"],
@@ -82,6 +85,7 @@ class AuditDatabase:
                         data["图斑编号"],
                         data["建筑层数"],
                         data["占地面积"],
+                        data["建筑面积"],
                         data["id"]
                     ))
                     self.conn.commit()
@@ -104,7 +108,8 @@ class AuditDatabase:
                     "DSR": row[2],             # "当事人"
                     "TBBH": row[3],            # "图斑编号"
                     "JZCS": row[4],            # "建筑层数"
-                    "ZDMJ": row[5]             # "占地面积"
+                    "ZDMJ": row[5],            # "占地面积"
+                    "JZMJ": row[6],            # "建筑面积"
                 }
                     return None
             except Exception as e:
@@ -153,7 +158,8 @@ if __name__ == "__main__":
         "当事人": "五六",
         "图斑编号": "HZJGZW202401-441322122510Z0006",
         "建筑层数": 3,
-        "占地面积": 123
+        "占地面积": 123,
+        "建筑面积": 200
     }
 
     config = {

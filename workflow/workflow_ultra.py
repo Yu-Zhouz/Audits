@@ -32,7 +32,6 @@ class Workflow(Base_Workflow):
         :param task_queue: 任务队列
         :return:
         """
-        results_list = []
         # logging.info("开始处理任务！")
         logging.getLogger("httpx").setLevel(logging.WARNING)  # 如果使用httpx
         for task_id, input_paths in task_queue.items():
@@ -47,7 +46,8 @@ class Workflow(Base_Workflow):
                 "当事人": None,
                 "图斑编号": None,
                 "建筑层数": None,
-                "占地面积": None
+                "占地面积": None,
+                "建筑面积": None
             }
             seal_results, miner_results, paddle_results, vlm_results, llm_m_results, llm_p_results = [], [], [], [], [], []  # 识别结果
             vlm = VLM(self.config)
@@ -103,10 +103,6 @@ class Workflow(Base_Workflow):
                 results = self._mergers_comparison(results_vlm, results_miner)
                 # 将结果添加到字典results中
                 self.results_dict.update(results)
-
-            # logging.info("开始保存结果！")
-            # 将结果添加到列表results_list中
-            # results_list.append(self.results_dict)
 
         return self.results_dict
 

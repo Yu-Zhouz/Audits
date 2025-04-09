@@ -44,7 +44,8 @@ class Workflow(Base_Workflow):
                 "当事人": None,
                 "图斑编号": None,
                 "建筑层数": None,
-                "占地面积": None
+                "占地面积": None,
+                "建筑面积": None,
             }
             seal_results, miner_results, paddle_results, llm_m_results, llm_p_results = [], [], [], [], []  # 识别结果
             for input_path in input_paths:
@@ -104,13 +105,8 @@ class Workflow(Base_Workflow):
                 self.post_process(seal_results, llm_p_results)
                 results_paddle = copy.deepcopy(self.results_dict)
                 results = self._mergers_comparison(results_miner, results_paddle)
-                # 更新空值的结果
-                for key, value in results.items():
-                    if self.results_dict[key] is None or self.results_dict[key] == "null":
-                        self.results_dict[key] = value
-            # logging.info("开始保存结果！")
-            # 将结果添加到列表results_list中
-            # results_list.append(self.results_dict)
+                # 将结果添加到字典results中
+                self.results_dict.update(results)
 
         return self.results_dict
 

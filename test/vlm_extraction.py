@@ -31,7 +31,7 @@ class VLM:
         self.service_url = self.config.get("service_url")
         self.model = self.config.get("model", "Qwen2.5-VL-32B")
         self.pdf_max_pages = self.config.get("pdf_max_pages", 10)
-        self.key = ['公章', '当事人', '图斑编号', '建筑层数', '占地面积']
+        self.key = ['公章', '当事人', '图斑编号', '建筑层数', '占地面积', '建筑面积']
         self.api_key = "EMPTY"  # 使用空字符串或任意值，因为 vLLM 不需要 API key
         # logging.info(f"VLM 服务已经初始化，服务器地址为： {self.service_url}")
 
@@ -231,7 +231,8 @@ class VLM:
                     "当事人": None,
                     "图斑编号": None,
                     "建筑层数": None,
-                    "占地面积": None
+                    "占地面积": None,
+                    "建筑面积": None
                 }
             else:
                 # 去除多余的 Markdown 格式（三个```）
@@ -360,7 +361,8 @@ class VLM:
                     "当事人": result.get("当事人", None),
                     "图斑编号": None,
                     "建筑层数": None,
-                    "占地面积": None
+                    "占地面积": None,
+                    "建筑面积": None
                 }
 
                 # 更新 last_result
@@ -416,18 +418,6 @@ if __name__ == "__main__":
         else:
             print(f"文件 {file_path} 不存在！")
 
-    # # 测试处理图像文件
-    # # image_path = "./data_test/img_v3_02kc_6e2bade0-a0ed-4529-8dfa-db73f379354g.jpg"
-    # image_path = "./data_test/img_v3_02kp_13f2f8de-d95f-41cd-b55a-fefc8954446g.jpg"
-    # result = vlm.process(image_path)
-    # print("处理结果：", result)
-
-    # # 测试处理 PDF 文件
-    # pdf_path = "./data_test/纪要20236号人员名单明细.pdf"
-    # results = vlm.process(pdf_path)
-    # print("处理结果：", results)
-
-
 
 
 
@@ -469,7 +459,7 @@ if __name__ == "__main__":
 #         self._prepare_directories()
 #         self.service_url = self.config.get("service_url")
 #         self.model = self.config.get("model", "Qwen2.5-VL-7B")
-#         self.key = ['公章', '当事人', '图斑编号', '建筑层数', '占地面积']
+#         self.key = ['公章', '当事人', '图斑编号', '建筑层数', '占地面积', '建筑面积']
 #         # logging.info(f"VLM 服务已经初始化，服务器地址为： {self.service_url}")
 #
 #     def _prepare_directories(self):

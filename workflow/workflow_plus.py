@@ -47,7 +47,8 @@ class Workflow(Base_Workflow):
                 "当事人": None,
                 "图斑编号": None,
                 "建筑层数": None,
-                "占地面积": None
+                "占地面积": None,
+                "建筑面积": None,
             }
             seal_results, miner_results, paddle_results, vlm_results, llm_m_results, llm_p_results = [], [], [], [], [], []  # 识别结果
             for input_path in input_paths:
@@ -116,20 +117,15 @@ class Workflow(Base_Workflow):
                                     logging.error(f"任务 {task_id} 在第三阶段的llm中处理失败！")
                         except Exception as e:
                             logging.error(f"任务{task_id}中的文件{input_path}处理失败！错误信息：{str(e)}")
-
+                    # 开始对结果进行后处理合并
+                    logging.info(f"开始对 {task_id} 结果进行后处理！")
                     self.post_process(seal_results, llm_p_results)
                     results_paddle = copy.deepcopy(self.results_dict)
                     results = self._mergers_comparison(results_miner, results_paddle)
-                    # 更新空值的结果
-                    for key, value in results.items():
-                        if self.results_dict[key] is None or self.results_dict[key] == "null":
-                            self.results_dict[key] = value
+                    # 将结果添加到字典results中
+                    self.results_dict.update(results)
 
-            # logging.info("开始保存结果！")
-            # 将结果添加到列表results_list中
-            # results_list.append(self.results_dict)
-
-        return results_list
+        return self.results_dict
 
 
 if __name__ == "__main__":

@@ -150,7 +150,7 @@ from openai import OpenAI
 class LLM:
     def __init__(self, config):
         """初始化LLM"""
-        self.key = ['当事人', '图斑编号', '建筑层数', '占地面积']
+        self.key = ['当事人', '图斑编号', '建筑层数', '占地面积', '建筑面积']
         self.service_url = config.get("llm_config", {}).get("service_url")
         self.model = config.get("llm_config", {}).get("model", "QwQ-32B")
         self.api_key = "EMPTY"  # 使用空字符串或任意值，因为 vLLM 不需要 API key
