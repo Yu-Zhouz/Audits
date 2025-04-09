@@ -52,28 +52,6 @@ class AuditDatabase:
         """)
         self.conn.commit()
 
-    # def insert_data(self, data: Dict):
-    #     """将字典数据插入到数据库表中，如果id存在则覆盖原来的内容"""
-    #     cursor = self.conn.cursor()
-    #     try:
-    #         cursor.execute("""
-    #         INSERT OR REPLACE INTO data_results (id, 公章, 当事人, 图斑编号, 建筑层数, 占地面积)
-    #         VALUES (?, ?, ?, ?, ?, ?)
-    #         """, (
-    #             data["id"],
-    #             data["公章"],
-    #             data["当事人"],
-    #             data["图斑编号"],
-    #             data["建筑层数"],
-    #             data["占地面积"]
-    #         ))
-    #         self.conn.commit()
-    #         print("数据插入或更新成功！")
-    #     except sqlite3.IntegrityError as e:
-    #         print(f"插入或更新数据时发生错误：{e}")
-    #     except Exception as e:
-    #         print(f"发生未知错误：{e}")
-
     def insert_data(self, data: Dict):
         with self.lock:  # 使用锁确保线程安全
             cursor = self.conn.cursor()

@@ -109,20 +109,5 @@ class Base_Workflow:
 
         return results  # 返回合并后的结果字典
 
-    # @staticmethod
-    # def _mergers_comparison(results_worn, results_new):
-    #     """比较结果并合并"""
-    #     results = {}
-    #     for field in results_worn.keys():
-    #         if field in results_new and results_new[field] is not None and results_new[field] != "null":
-    #             if results_new[field] != results_worn[field]:
-    #                 results[field] = results_new[field]  # 优先取results_new的值
-    #             else:
-    #                 results[field] = results_worn[field]
-    #         else:
-    #             results[field] = results_worn[field]
-    #
-    #     return results
-
     def start_task(self, task_queue):
         pass
