@@ -69,9 +69,11 @@ def get_data():
 # Flask 路由, 用于获取多个数据
 @app.route('/api/bulk', methods=['GET', 'POST'])
 def get_bulk_data():
-    # 从 GET 请求的查询参数获取 ids
-    task_ids = request.args.getlist('ids')  # 支持多个 ids 参数
-    if not task_ids:
+    # 从 GET 请求的查询参数获取 ids，支持逗号分隔的单个 ids 参数
+    task_ids = request.args.get('ids')
+    if task_ids:
+        task_ids = task_ids.split(',')  # 将逗号分隔的字符串拆分为列表
+    else:
         # 从 POST 请求的 JSON 数据中获取 ids
         task_ids = request.json.get('ids') if request.json else None
 

@@ -205,26 +205,3 @@ def query_data_by_ids(config, task_ids):
         return []
     finally:
         db.close()
-
-
-# # 测试代码
-# if __name__ == "__main__":
-#     # 示例数据
-#     data = {
-#         "id": "122222224558489",
-#         "公章": True,
-#         "当事人": "五六",
-#         "图斑编号": "HZJGZW202401-441322122510Z0006",
-#         "建筑层数": 3,
-#         "占地面积": 123,
-#         "建筑面积": 200
-#     }
-#
-#     config = {
-#         "results_db_config": {
-#             "db_name": "../database/audit_results.db"
-#         }
-#     }
-#
-#     # 调用封装的函数
-#     store_audit_result(config, data)
