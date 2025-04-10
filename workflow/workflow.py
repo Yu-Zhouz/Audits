@@ -34,17 +34,21 @@ class Base_Workflow:
     def _many_results(self, results):
         # 提取 results 结果中出现次数最多的值
         llm_field_values = {field: [] for field in self.results_dict.keys() if field != "公章"}
-        # 提取 results 结果中出现次数最多的值
+
         for item in results:
             if item is not None:
                 for field, value in item.items():
-                    if field in llm_field_values and value is not None and value != "null":
-                        llm_field_values[field].append(value)
+                    if field in llm_field_values:
+                        # 如果值是列表，将其转换为字符串
+                        if isinstance(value, list):
+                            value = ", ".join(map(str, value))
+                        if value is not None and value != "null":
+                            llm_field_values[field].append(value)
                     if field == "公章":
                         if value is True:
                             self.results_dict["公章"] = True
             else:
-                # 公章设置为Flase, 其余值为None
+                # 公章设置为False, 其余值为None
                 self.results_dict["公章"] = False
                 for field in self.results_dict.keys():
                     if field != "公章":
