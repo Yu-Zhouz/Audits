@@ -95,12 +95,25 @@ class VLM:
         images = convert_from_path(pdf_path)
         image_paths = []
         for i, image in enumerate(images):
+            # 生成图像路径
             image_path = os.path.join(self.image_dir, f"page_{i + 1}.jpg")
+
+            # 保存图像为 JPEG 格式
             image.save(image_path, "JPEG")
-            image_paths.append(image_path)
+
+            # 压缩图像并调整分辨率
+            compressed_image_path = os.path.join(self.image_dir, f"compressed_page_{i + 1}.jpg")
+            self._compress_image(image_path, compressed_image_path, quality=80, max_size=2048)
+
+            # 替换为压缩后的图像路径
+            image_paths.append(compressed_image_path)
+
+            # 删除原始图像
+            os.remove(image_path)
+
         return image_paths
 
-    def _vlm_service(self, prompt, max_retries=5, delay=3, initial_quality=100, is_image_request=True):
+    def _vlm_service(self, prompt, max_retries=5, delay=3, initial_quality=80, is_image_request=True):
         """调用模型"""
 
         # 如果有上一次的结果，将其作为上下文信息添加到prompt中
@@ -130,7 +143,7 @@ class VLM:
 
         current_quality = initial_quality
         min_quality = 30  # 设置一个最低质量阈值，避免无限降低质量
-        max_size_ratio = 4
+        max_size_ratio = 3
         for attempt in range(max_retries):
             try:
                 # 使用OpenAI API
@@ -190,8 +203,6 @@ class VLM:
 
                 },
                 {"type": "text", "text": f"""要抽取的关键信息：{self.key}, 其中公章为bool类型，只要有公章则为True；
-                                    当事人只有一位人，不存在多个当事人，需要从身份证、户口本、产权证书、施工牌等文件中提取,
-                                    如果没有自然人名称可提取申请文件中的企业名称、项目单位、申报单位、实施主体或项目负责单位的名称（唯一）；
                                     建筑层数和占地面积都为int类型，不需要加单位;
                                     图斑编号的格式为：HZJGZWYYYYMM-XXXXXXXXXXXXZNNNN，即不是身份证号，也不是农宅施编号，严格以HZJGZW开头的编号格式。
                                     在返回结果时使用json格式，包含多个key-value对，key值为我指定的关键信息值唯一，value值为所抽取的结果。
@@ -308,8 +319,6 @@ class VLM:
         prompt = [
             {"type": "text", "text": f"""OCR文字：```{ocr_text}```"""},
             {"type": "text", "text": f"""要抽取的关键信息：{self.key}, 其中公章为bool类型，只要有公章则为True；
-                                当事人只有一位人，不存在多个当事人，需要从身份证、户口本、产权证书、施工牌等文件中提取,
-                                如果没有自然人名称可提取申请文件中的企业名称、项目单位、申报单位、实施主体或项目负责单位的名称（唯一）；
                                 建筑层数和占地面积都为int类型，不需要加单位;
                                 图斑编号的格式为：HZJGZWYYYYMM-XXXXXXXXXXXXZNNNN，即不是身份证号，也不是农宅施编号，严格以HZJGZW开头的编号格式。
                                 在返回结果时使用json格式，包含多个key-value对，key值为我指定的关键信息值唯一，value值为所抽取的结果。
