@@ -31,6 +31,7 @@ class ParallelProcessor:
         self.task_queue = self.downloader.get_task_queue()  # 使用 DataDownloader 的任务队列
         self.running = True
         self.delete = delete  # 是否删除下载的文件
+        self.scan_interval = 3
         self.download_completed = False  # 新增标志，表示下载是否完成
 
     def download_task(self):
@@ -91,7 +92,7 @@ class ParallelProcessor:
                         break
                 # 如果队列为空但下载未完成，等待新任务
                 logging.info("队列为空，等待中...")
-                time.sleep(self.downloader.scan_interval / 10)
+                time.sleep(self.scan_interval)
 
     def start(self):
         # 启动下载线程
@@ -142,7 +143,7 @@ if __name__ == "__main__":
 
     # 假设你有一个配置文件 config.py
     config = load_config()
-    task_id_list = ["1296873620546519040"]
+    task_id_list = ["1230441438601281536"]
     processor = ParallelProcessor(config, task_id_list)
     processor.start()
 
