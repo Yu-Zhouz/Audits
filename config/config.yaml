@@ -64,7 +64,15 @@ vlm_config:
 
 # 结果数据库配置
 results_db_config:
+  db_type: "sqlite"  # 可选值: sqlite, mysql
+  # SQLite 配置
   db_name: "./database/audit_results.db"
+  # MySQL 配置
+  host: 172.16.15.10
+  port: 30124
+  user: auditUser
+  password: gdty@123
+  database: audit_results
 
 # 其他配置
 logging_config:

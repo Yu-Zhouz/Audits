@@ -13,19 +13,25 @@ import sys
 import oracledb
 from flask import Flask, request, jsonify
 from gevent import pywsgi
+import logging
 
+# 配置 logging
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 # 获取项目根目录
 project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 sys.path.append(project_root)
 
 from utils import load_config
-from database import query_data, query_data_by_ids
+from database import get_db
+
 
 # 加载配置文件
 config = load_config()
 # 获取 LLM 识别服务的配置
 llm_config = config.get("results_db_config", {})
+
+_, query_data, query_data_by_ids = get_db(config)
 app = Flask(__name__)
 app.config['JSON_AS_ASCII'] = False
 
@@ -48,7 +54,6 @@ def get_db_connection():
     return conn
 
 
-
 # Flask 路由, 用于获取单个数据
 @app.route('/api', methods=['GET', 'POST'])
 def get_data():
@@ -60,11 +65,12 @@ def get_data():
     if not task_id:
         return jsonify({"error": "Missing 'id' parameter"}), 400
 
-    # 打印请求的 IP 地址
-    print(f"请求的 IP 地址: {request.remote_addr}， 响应的 task_id {task_id}")
+    # 使用 logging 记录请求的 IP 地址和响应的 task_id
+    logging.info(f"请求的 IP 地址: {request.remote_addr}， 响应的 task_id {task_id}")
 
     data = query_data(config, task_id)
     return jsonify(data)  # 如果查询不到数据，返回 None
+
 
 # Flask 路由, 用于获取多个数据
 @app.route('/api/bulk', methods=['GET', 'POST'])
@@ -81,8 +87,8 @@ def get_bulk_data():
     if not task_ids:
         return jsonify({"error": "Missing 'ids' parameter"}), 400
 
-    # 打印请求的 IP 地址
-    print(f"请求的 IP 地址: {request.remote_addr}， 响应的 task_ids {task_ids}")
+    # 使用 logging 记录请求的 IP 地址和响应的 task_ids
+    logging.info(f"请求的 IP 地址: {request.remote_addr}， 响应的 task_ids {task_ids}")
 
     data = query_data_by_ids(config, task_ids)
     return jsonify(data)  # 如果查询不到数据，返回空列表

@@ -15,8 +15,7 @@ import threading
 import time
 from datetime import datetime
 from utils import setup_logging
-from database import DataDownloader
-from database.audit_results import AuditDatabase
+from database import get_db, DataDownloader
 from workflow import get_workflow
 
 
@@ -54,7 +53,7 @@ class ParallelProcessor:
         logger = self.logger
         logger.info("处理线程已启动")
         # 为每个线程创建独立的数据库连接
-        database = AuditDatabase(self.config)
+        store_audit_result, _, _ = get_db(self.config)
         while self.running:
             if not self.task_queue.empty():
                 try:
@@ -69,12 +68,10 @@ class ParallelProcessor:
                     # 保存结果到数据库
                     time_end = time.time()
                     if results.get('id') is not None:
-                        database.insert_data(results)
+                        store_audit_result(self.config, results)
                         logging.info(f"任务 {task_id} 的结果已保存到数据库, 用时 {time_end - time_start}")
                     else:
                         logging.warning(f"任务 {task_id} 没有返回结果")
-                    # 关闭数据库连接
-                    database.close()
                     # 标记任务完成
                     self.downloader.task_done()
                     # 删除数据

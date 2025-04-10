@@ -172,3 +172,4 @@ cython_debug/
 
 # PyPI configuration file
 .pypirc
+/database/audit_results_my.py

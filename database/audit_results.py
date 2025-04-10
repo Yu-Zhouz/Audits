@@ -21,6 +21,7 @@ import logging
 import sqlite3
 import threading
 from typing import Dict, Optional
+from utils import retry_on_error
 
 
 # 数据库操作类
@@ -131,32 +132,30 @@ class AuditDatabase:
                 rows = cursor.fetchall()
 
                 # 将查询结果转换为字典列表
-                result_map = {}  # 使用字典存储查询结果，键为 ID
+                results = []
                 for row in rows:
-                    result_map[row[0]] = {
+                    results.append({
                         "ID": row[0],
                         # "GZ": bool(row[1]),        # "公章"
-                        "DSR": row[2],  # "当事人"
+                        "DSR": row[2],   # "当事人"
                         "TBBH": row[3],  # "图斑编号"
                         "JZCS": row[4],  # "建筑层数"
                         "ZDMJ": row[5],  # "占地面积"
                         "JZMJ": row[6],  # "建筑面积"
-                    }
-
-                # 按照输入的 task_ids 顺序返回结果，不存在的 ID 返回 None
-                results = []
-                for task_id in task_ids:
-                    results.append(result_map.get(task_id, None))
-
+                    })
                 return results
             except Exception as e:
                 print(f"查询异常: {e}")
                 return []
             finally:
                 cursor.close()
+
     def close(self):
         self.conn.close()
 
+
+# 使用装饰器添加重试机制
+@retry_on_error(retries=5)
 def store_audit_result(config: Dict, data: Dict):
     """
     将审计结果存储到数据库中
@@ -169,10 +168,12 @@ def store_audit_result(config: Dict, data: Dict):
     except:
         logging.error("数据库插入数据失败")
     # 关闭数据库连接
-    db.close()
+    finally:
+        db.close()
 
 
 # 单id查询数据
+@retry_on_error(retries=5)
 def query_data(config, task_id):
     """根据 task_id 获取审计结果"""
     # 初始化数据库
@@ -189,7 +190,9 @@ def query_data(config, task_id):
     finally:
         db.close()
 
+
 # 多ID查询数据
+@retry_on_error(retries=5)
 def query_data_by_ids(config, task_ids):
     # 初始化数据库
     db = AuditDatabase(config)

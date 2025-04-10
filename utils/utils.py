@@ -11,6 +11,7 @@
 import logging
 import os
 import sys
+import time
 from datetime import datetime
 
 import yaml
@@ -101,3 +102,20 @@ def get_scan_interval(config):
             if start_hour <= current_hour or current_hour < end_hour:
                 return interval_seconds
     return default_interval
+
+
+# 装饰器：用于实现错误重试机制
+def retry_on_error(retries=3, delay=1):
+    def decorator(func):
+        def wrapper(*args, **kwargs):
+            for attempt in range(retries):
+                try:
+                    return func(*args, **kwargs)
+                except Exception as e:
+                    logging.error(f"Attempt {attempt + 1} failed: {e}")
+                    if attempt < retries - 1:
+                        time.sleep(delay)
+                    else:
+                        raise
+        return wrapper
+    return decorator

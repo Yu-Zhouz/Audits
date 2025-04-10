@@ -15,19 +15,18 @@ import threading
 import time
 from datetime import datetime
 from utils import setup_logging, get_scan_interval
-from database import DataDownloader
-from database.audit_results import AuditDatabase
+from database import get_db, DataDownloader
 from workflow import get_workflow
 
 class ParallelProcessor:
     def __init__(self, config, process_initial_data=False, delete=True):
 
         self.config = config
-        self.downloader = DataDownloader(config)
-        self.workflow = get_workflow(config)
-        self.data_dir = config.get("data_config", {}).get("data_dir")  # 数据目录
-        self.timestamp_file = config.get("workflow_config", {}).get("last_check_time")  # 保存时间戳的文件名
-        self.logger = setup_logging(config, log_name='audits')  # 日志记录器
+        self.downloader = DataDownloader(self.config)
+        self.workflow = get_workflow(self.config)
+        self.data_dir = self.config.get("data_config", {}).get("data_dir")  # 数据目录
+        self.timestamp_file = self.config.get("workflow_config", {}).get("last_check_time")  # 保存时间戳的文件名
+        self.logger = setup_logging(self.config, log_name='audits')  # 日志记录器
         self.task_queue = self.downloader.get_task_queue()  # 使用 DataDownloader 的任务队列
         self.scan_interval = get_scan_interval(self.config)  # 使用时间扫描函数获取当前扫描间隔
         self.last_check_time = None
@@ -102,7 +101,7 @@ class ParallelProcessor:
         logger = self.logger
         logger.info("处理线程已启动")
         # 为每个线程创建独立的数据库连接
-        database = AuditDatabase(self.config)
+        store_audit_result, _, _ = get_db(self.config)
         first_scan = True  # 添加一个标志，用于判断是否是第一次扫描
         while self.running:
             if not self.task_queue.empty():
@@ -118,7 +117,7 @@ class ParallelProcessor:
                     # 保存结果到数据库
                     time_end = time.time()
                     if results.get('id') is not None:
-                        database.insert_data(results)
+                        store_audit_result(self.config, results)
                         logging.info(f"任务 {task_id} 的结果已保存到数据库, 用时 {time_end - time_start}")
                     else:
                         logging.warning(f"任务 {task_id} 没有返回结果")
