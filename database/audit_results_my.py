@@ -59,9 +59,9 @@ class AuditDatabase:
                 公章 BOOLEAN,
                 当事人 TEXT,
                 图斑编号 TEXT,
-                建筑层数 INT,
-                占地面积 INT,
-                建筑面积 INT
+                建筑层数 VARCHAR(50),
+                占地面积 DECIMAL(38, 4),
+                建筑面积 DECIMAL(38, 4)
             )
             """)
             self.conn.commit()
@@ -130,6 +130,7 @@ class AuditDatabase:
                 row = cursor.fetchone()
                 return {
                     "ID": row["id"],
+                    # "GZ": bool(row["公章"]),  # 转换数据库值到布尔类型
                     "DSR": row["当事人"],
                     "TBBH": row["图斑编号"],
                     "JZCS": row["建筑层数"],
@@ -160,6 +161,7 @@ class AuditDatabase:
             for row in rows:
                 translated = {
                     "ID": row["id"],
+                    # "GZ": bool(row["公章"]),  # 转换数据库值到布尔类型
                     "DSR": row.get("当事人"),
                     "TBBH": row.get("图斑编号"),
                     "JZCS": row.get("建筑层数"),
