@@ -15,6 +15,14 @@ import os
 import time
 import json
 import base64
+from collections import Counter
+
+import nltk
+import tiktoken
+from nltk.tokenize import sent_tokenize
+
+# 下载NLTK数据
+# nltk.download('punkt')
 from openai import OpenAI, OpenAIError
 from pdf2image import convert_from_path
 from PIL import Image
@@ -203,7 +211,8 @@ class VLM:
 
                 },
                 {"type": "text", "text": f"""要抽取的关键信息：{self.key}, 其中公章为bool类型，只要有公章则为True；
-                                    建筑层数和占地面积都为int类型，不需要加单位;
+                                    当事人最多不超过五个，其它字段唯一；
+                                    建筑层数、占地面积和建筑面积都是用数字表示不需要加单位，如果有小数则保留小数;
                                     图斑编号的格式为：HZJGZWYYYYMM-XXXXXXXXXXXXZNNNN，即不是身份证号，也不是农宅施编号，严格以HZJGZW开头的编号格式。
                                     在返回结果时使用json格式，包含多个key-value对，key值为我指定的关键信息值唯一，value值为所抽取的结果。
                                     如果认为图像中没有关键信息key，则将value赋值为“null”。请只输出json格式的结果，不要包含其它多余文字！"""}
@@ -221,7 +230,7 @@ class VLM:
         image_paths = self._convert_pdf_to_images(pdf_path)
         results = []
 
-        # TODO: 指定最大页数,限制最大页数
+        # 指定最大页数,限制最大页数
         if self.pdf_max_pages is not None:
             image_paths = image_paths[:self.pdf_max_pages]
 
@@ -310,35 +319,205 @@ class VLM:
 
         return results
 
-    # TODO:专门针对文本的处理
     def process_text(self, ocr_text):
         """
         处理提取的文本，提取关键信息。
         使用 VLM 模型的 API 进行情感分析和信息抽取。
         """
-        prompt = [
-            {"type": "text", "text": f"""OCR文字：```{ocr_text}```"""},
+        # 分块处理文本
+        chunks = self._split_text_into_chunks(ocr_text, max_tokens=3000)
+
+        # 初始化结果列表
+        results = []
+
+        for chunk in chunks:
+            # 为每个分块创建独立的对话
+            prompt = [
+                {"type": "text", "text": f"""OCR文字：```{chunk}```"""},
+                {"type": "text", "text": f"""要抽取的关键信息：{self.key}, 其中公章为bool类型，只要有公章则为True；
+                                        当事人最多不超过五个，其它字段唯一；
+                                        建筑层数、占地面积和建筑面积都是用数字表示不需要加单位，如果有小数则保留小数;
+                                        图斑编号的格式为：HZJGZWYYYYMM-XXXXXXXXXXXXZNNNN，即不是身份证号，也不是农宅施编号，严格以HZJGZW开头的编号格式。
+                                        在返回结果时使用json格式，包含多个key-value对，key值为我指定的关键信息值唯一，value值为所抽取的结果。
+                                        如果认为图像中没有关键信息key，则将value赋值为“null”。请只输出json格式的结果，不要包含其它多余文字！"""}
+            ]
+
+            try:
+                # 为每个分块创建独立的对话
+                response = self._vlm_service_text(prompt, max_retries=5, delay=3, is_image_request=False)
+                # 结果后处理
+                result = self._post_process(response)
+                if result:
+                    results.append(result)
+            except OpenAIError as e:  # 捕获 OpenAI 库的异常
+                logging.error(f"处理文本时发生网络问题：{e}")
+                return ""
+            except Exception as e:
+                logging.error(f"处理文本时发生错误：{e}")
+                return ""
+
+        # 合并所有分块的结果
+        final_result = self._merge_results(results)
+        return final_result
+
+    def _split_text_into_chunks(self, text, max_tokens=3000):
+        """
+        将长文本分成多个小块，每块的长度不超过 max_tokens。
+        改进：考虑 prompt 和 completion 的 token 占用，确保总长度不超过模型限制。
+        """
+        # 使用 nltk 分句
+        sentences = sent_tokenize(text)
+
+        # 初始化分块列表
+        chunks = []
+        current_chunk = []
+        current_length = 0
+
+        # 预估 prompt 和 completion 的 token 数量
+        prompt_template = [
+            {"type": "text", "text": f"""OCR文字：```{text}```"""},
             {"type": "text", "text": f"""要抽取的关键信息：{self.key}, 其中公章为bool类型，只要有公章则为True；
-                                建筑层数和占地面积都为int类型，不需要加单位;
-                                图斑编号的格式为：HZJGZWYYYYMM-XXXXXXXXXXXXZNNNN，即不是身份证号，也不是农宅施编号，严格以HZJGZW开头的编号格式。
-                                在返回结果时使用json格式，包含多个key-value对，key值为我指定的关键信息值唯一，value值为所抽取的结果。
-                                如果认为图像中没有关键信息key，则将value赋值为“null”。请只输出json格式的结果，不要包含其它多余文字！"""}
+                                    当事人最多不超过五个，其它字段唯一；
+                                    建筑层数、占地面积和建筑面积都是用数字表示不需要加单位，如果有小数则保留小数;
+                                    图斑编号的格式为：HZJGZWYYYYMM-XXXXXXXXXXXXZNNNN，即不是身份证号，也不是农宅施编号，严格以HZJGZW开头的编号格式。
+                                    在返回结果时使用json格式，包含多个key-value对，key值为我指定的关键信息值唯一，value值为所抽取的结果。
+                                    如果认为图像中没有关键信息key，则将value赋值为“null”。请只输出json格式的结果，不要包含其它多余文字！"""}
+        ]
+        prompt_token_count = sum(len(self._tokenize_text(part["text"])) for part in prompt_template if part["type"] == "text")
+        completion_token_count = 512  # 假设 completion 占用约 512 tokens
+        max_available_tokens = 5120 - prompt_token_count - completion_token_count  # 预留 tokens 给 completion
+
+        for sentence in sentences:
+            sentence_length = len(self._tokenize_text(sentence))
+
+            # 如果当前块加上新句子的长度超过可用 tokens，则创建新块
+            if current_length + sentence_length > max_available_tokens:
+                chunks.append(" ".join(current_chunk))
+                current_chunk = []
+                current_length = 0
+
+            current_chunk.append(sentence)
+            current_length += sentence_length
+
+        # 添加最后一个块
+        if current_chunk:
+            chunks.append(" ".join(current_chunk))
+
+        return chunks
+
+    @staticmethod
+    def _tokenize_text(text):
+        """
+        简单的分词函数，用于估算文本的 token 数量。
+        改进：使用更精确的分词方法，例如基于模型的 tokenizer。
+        """
+        # 使用 OpenAI 的 tokenizer
+        tokenizer = tiktoken.get_encoding("cl100k_base")
+        return tokenizer.encode(text)
+
+    @staticmethod
+    def _merge_results(results):
+        """
+        合并多个分块处理的结果。
+        :param results: 包含多个分块结果的列表
+        :return: 合并后的最终结果字典
+        """
+        if not results:
+            return {
+                "公章": False,
+                "当事人": None,
+                "图斑编号": None,
+                "建筑层数": None,
+                "占地面积": None,
+                "建筑面积": None
+            }
+
+        # 初始化最终结果字典
+        final_result = {
+            "公章": False,
+            "当事人": None,
+            "图斑编号": None,
+            "建筑层数": None,
+            "占地面积": None,
+            "建筑面积": None
+        }
+
+        # 存储每个字段的值列表
+        field_values = {field: [] for field in final_result.keys() if field != "公章"}
+
+        for item in results:
+            if item is not None:
+                for field, value in item.items():
+                    if field in field_values:
+                        # 如果值是列表，将其转换为字符串
+                        if isinstance(value, list):
+                            value = ", ".join(map(str, value))
+                        if value is not None and value != "null":
+                            field_values[field].append(value)
+                    if field == "公章":
+                        if value is True:
+                            final_result["公章"] = True
+            else:
+                # 公章设置为False, 其余值为None
+                final_result["公章"] = False
+                for field in final_result.keys():
+                    if field != "公章":
+                        final_result[field] = None
+
+        # 选择每个字段出现次数最多的值
+        for field, values in field_values.items():
+            if values:
+                most_common_value = Counter(values).most_common(1)[0][0]  # 取出现次数最多的值
+                final_result[field] = most_common_value
+
+        return final_result
+
+    def _vlm_service_text(self, prompt, max_retries=5, delay=3, is_image_request=True):
+        """
+        调用模型，为每个分块创建独立的对话。
+        """
+        # 验证 prompt 格式
+        if not isinstance(prompt, list):
+            logging.error("Prompt 格式错误，必须是列表。")
+            return ""
+
+        # 构造请求数据
+        messages = [
+            {
+                "role": "system",
+                "content": "你是一个文件解析助手，需要从我指定的关键信息中抽取结果"
+            },
+            {
+                "role": "user",
+                "content": prompt
+            }
         ]
 
-        try:
-            response = self._vlm_service(prompt, max_retries=5, delay=3, is_image_request=False)
-            # 结果后处理
-            results = self._post_process(response)
-            return results
-        except OpenAIError as e:  # 捕获 OpenAI 库的异常
-            logging.error(f"处理文本时发生网络问题：{e}")
-            return ""
-        except Exception as e:
-            logging.error(f"处理文本时发生错误：{e}")
-            return ""
+        client = self.init_client()
+
+        for attempt in range(max_retries):
+            try:
+                # 使用OpenAI API
+                response = client.chat.completions.create(
+                    model=self.model,
+                    messages=messages,
+                    temperature=0.0,
+                    top_p=1.0,
+                    max_tokens=512,
+                    extra_body={
+                        "repetition_penalty": 1.05,
+                    },
+                )
+                response_data = response.choices[0].message.content
+                return response_data
+            except Exception as e:
+                logging.error(f"请求失败，正在重试（{attempt + 1}/{max_retries}）... 错误信息：{e}")
+                time.sleep(delay)
+
+        logging.error("请求失败，已超过最大重试次数。")
+        return ""
 
 
-    # TODO:专门处理文件名列表
     def process_file_list(self, file_list):
         """
         处理文件名列表，提取关键信息。

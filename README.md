@@ -57,7 +57,7 @@ Audits
 ## 安装
 
 ```bash
-pip install addict cx-oracle addict oracledb pdf2image scripts stua Flask gevent
+pip install addict, cx-oracle, addict, oracledb, pdf2image, scripts, stua, Flask, gevent, nltk, tiktoken
 
 ```
 
