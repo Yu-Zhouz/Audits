@@ -31,6 +31,23 @@ class Base_Workflow:
     def init_models(self):
         pass
 
+    def _update_building_area(self):
+        """对占地面积和建筑面积进行判断更新"""
+        occupied_area = self.results_dict['占地面积']
+        building_levels = self.results_dict['建筑层数']
+
+        # 检查是否有足够的数据计算建筑面积
+        if (isinstance(occupied_area, (int, float)) and
+            isinstance(building_levels, (int, float)) and
+            occupied_area is not None and building_levels is not None and
+            building_levels > 0):
+
+            # 计算建筑面积
+            self.results_dict['建筑面积'] = occupied_area * building_levels
+        else:
+            # 如果条件不足，则将建筑面积设为 None
+            self.results_dict['建筑面积'] = None
+
     def _many_results(self, results):
         # 提取 results 结果中出现次数最多的值
         llm_field_values = {field: [] for field in self.results_dict.keys() if field != "公章"}
@@ -42,7 +59,10 @@ class Base_Workflow:
                         # 如果值是列表，将其转换为字符串
                         if isinstance(value, list):
                             value = ", ".join(map(str, value))
-                        if value is not None and value != "null":
+                        if value is not None and value != "null" and value != '':
+                            # 增加对图斑编号的判断和长度判断,
+                            if field == "图斑编号" and (not value.startswith("HZJGZW") or not (30 <= len(value) <= 33)):
+                                continue
                             llm_field_values[field].append(value)
                     if field == "公章":
                         if value is True:
@@ -60,8 +80,10 @@ class Base_Workflow:
                 most_common_value = Counter(values).most_common(1)[0][0]  # 取出现次数最多的值
                 self.results_dict[field] = most_common_value
 
+        # 更新建筑面积
+        if self.results_dict['建筑面积'] is None and self.results_dict['建筑层数'] is not None and self.results_dict['占地面积'] is not None:
+            self._update_building_area()
 
-    # 开始对结果后处理
     def post_process(self, seal_results: List[List[Dict]], llm_results: List[Dict]) -> int:
         """
         后处理函数，合并印章识别结果和 LLM 结果。

@@ -56,6 +56,7 @@ class Workflow(Base_Workflow):
             for input_path in input_paths:
                 try:
                     # 处理文件
+                    logging.info(f"开始对任务 {task_id} 中的文件 {input_path} 进行vlm提取...")
                     vlm_result = vlm.process(input_path)
                     vlm_results.append(vlm_result)
                 except Exception as e:
