@@ -267,7 +267,9 @@ class VLM:
                 # 特别处理公章字段：如果为 None，则替换为 False
                 if result["公章"] is None or result["公章"] == "null":
                     result["公章"] = False
-
+                # 如果当事人字段值是列表，将其转换为字符串
+                if isinstance(result["当事人"], list):
+                    result["当事人"] = ", ".join(result["当事人"])
                 # 返回处理后的字典
                 return result
         except json.JSONDecodeError as e:
@@ -575,6 +577,6 @@ if __name__ == "__main__":
 
     # 测试处理文件
     # image_path = "./data_test/img_v3_02kc_6e2bade0-a0ed-4529-8dfa-db73f379354g.jpg"
-    image_path = "../test/test_output/1319719191950917632/1737688306229_dji_fly_20250124_104332_804_1737687777570_photo.jpg"
+    image_path = "../data/data/1258377731100377088/0040-2.pdf"
     result = vlm.process(image_path)
     print("处理结果：", result)
