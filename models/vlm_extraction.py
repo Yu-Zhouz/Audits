@@ -214,6 +214,7 @@ class VLM:
                                     当事人最多不超过五个，其它字段唯一；
                                     建筑层数、占地面积和建筑面积都是用数字表示不需要加单位，如果有小数则保留小数;
                                     图斑编号的格式为：HZJGZWYYYYMM-XXXXXXXXXXXXZNNNN，即不是身份证号，也不是农宅施编号，严格以HZJGZW开头的编号格式。
+                                    文档可能包含竖着和横着两个方向的文本，请确保能够抽取所有方向的关键信息。
                                     在返回结果时使用json格式，包含多个key-value对，key值为我指定的关键信息值唯一，value值为所抽取的结果。
                                     如果认为图像中没有关键信息key，则将value赋值为“null”。请只输出json格式的结果，不要包含其它多余文字！"""}
             ]
@@ -563,6 +564,53 @@ class VLM:
         except Exception as e:
             logging.error(f"处理文件列表时发生错误：{e}")
 
+    def judge_name_type(self, name):
+        """
+        用模型判断当事人类型是自然人还是企业。
+        :param name: 当事人名称
+        :return: 0 表示自然人，1 表示企业
+        """
+        if not name:
+            return None
+
+        # 构造Prompt，让模型判断当事人类型
+        prompt = [
+            {"role": "system", "content": "你是一个智能助手，擅长判断当事人类型。"},
+            {"role": "user", "content": f"当事人名称：{name}"},
+            {"role": "user",
+             "content": f"判断当事人是自然人还是企业。如果是自然人，返回0；如果是企业或组织，返回1。请只返回一个结果，不要包含其它内容！"}
+        ]
+
+        try:
+            # 初始化OpenAI客户端
+            client = self.init_client()
+
+            # 调用模型
+            response = client.chat.completions.create(
+                model=self.model,
+                messages=prompt,
+                temperature=0.0,
+                top_p=1.0,
+                max_tokens=512,
+                extra_body={
+                    "repetition_penalty": 1.05,
+                },
+            )
+            response_data = response.choices[0].message.content.strip()
+
+            # 判断模型返回的结果
+            if response_data == "0":
+                return 0
+            elif response_data == "1":
+                return 1
+            else:
+                logging.warning(f"模型返回的结果不符合预期：{response_data}")
+                return None
+        except Exception as e:
+            logging.error(f"判断当事人类型时发生错误：{e}")
+            return None
+
+
 
 if __name__ == "__main__":
     # 加载配置文件
@@ -577,6 +625,11 @@ if __name__ == "__main__":
 
     # 测试处理文件
     # image_path = "./data_test/img_v3_02kc_6e2bade0-a0ed-4529-8dfa-db73f379354g.jpg"
-    image_path = "../data/data/1258377731100377088/0040-2.pdf"
-    result = vlm.process(image_path)
-    print("处理结果：", result)
+    # image_path = "../data/data/1258377731100377088/0040-2.pdf"
+    # result = vlm.process(image_path)
+    # print("处理结果：", result)
+
+    # 测试_judge_party_type
+    name = "何志伟, 惠州市塑料制品厂有限公司"
+    party_type = vlm.judge_name_type(name)
+    print("当事人类型：", party_type)
