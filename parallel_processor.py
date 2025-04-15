@@ -111,7 +111,7 @@ class ParallelProcessor:
                     # 获取一个任务
                     time_start = time.time()
                     task_id, file_paths = self.task_queue.get()
-                    logging.info(f"开始处理任务 {task_id}")
+                    logging.info(f"开始处理任务 {task_id}， 队列中剩余任务数: {self.task_queue.qsize()}")
                     # 识别
                     results = self.workflow.start_task({task_id: file_paths})
                     # 保存结果到数据库
