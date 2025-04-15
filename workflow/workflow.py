@@ -80,9 +80,15 @@ class Base_Workflow:
                 most_common_value = Counter(values).most_common(1)[0][0]  # 取出现次数最多的值
                 self.results_dict[field] = most_common_value
 
-        # 更新建筑面积
-        if self.results_dict['建筑面积'] is None and self.results_dict['建筑层数'] is not None and self.results_dict['占地面积'] is not None:
-            self._update_building_area()
+        # 根据建筑面积和占地面积之间的关系吗，更新建筑面积
+        if self.results_dict['占地面积'] is not None:
+            if self.results_dict['建筑面积'] is None or self.results_dict['建筑面积'] <= self.results_dict['占地面积']:
+                if self.results_dict['建筑层数'] is not None:
+                    # 如果建筑层数有效，则重新计算建筑面积
+                    self._update_building_area()
+                else:
+                    # 如果建筑层数无效，则将建筑面积设为 None
+                    self.results_dict['建筑面积'] = None
 
     def post_process(self, seal_results: List[List[Dict]], llm_results: List[Dict]) -> int:
         """
