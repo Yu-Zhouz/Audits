@@ -1,0 +1,11 @@
+addict
+cx-oracle
+addict
+oracledb
+pdf2image
+scripts
+stua
+Flask
+gevent
+nltk
+tiktoken

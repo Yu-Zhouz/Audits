@@ -5,10 +5,6 @@
 Audits
     ├── config/
     │   ├── config.yaml                # 配置文件，存储路径、参数等配置信息
-    │   ├── ocr.json                   # llm需要的json模板
-    │   ├── ocr_merge.json             # 多文件合并后的的json模板
-    │   ├── seal.json                  # 印章识别的json模板
-    │   └── llm_field.json             # llm返回的字段模板
     ├── data/
     │   ├── data/                      # 存放待处理佐证材料，主要为 PDF 和图片文件
     │   ├── output/                    # 输出文件夹，存放 OCR、印章识别和审核结果
@@ -48,6 +44,15 @@ Audits
     │   ├── api.py                     # API 脚本，提供接口与平台交互
     ├── utils/
     │   └── utils.py                   # 工具函数
+    ├── envs/
+    │   ├── start_vllm.sh              # VLLM 环境安装脚本
+    │   ├── start_paddlex.sh           # PaddleX 环境安装脚本
+    │   ├── start_mineru.sh            # MinerU 环境安装脚本
+    │   └── start_mysql.sh             # mysql 环境安装脚本
+    ├── docs/
+    │   ├── api.md                     # API 文档
+    │   ├── issues.md                  # 问题反馈文档
+    │   ├── 
     ├── main.py                        # 主程序入口，用于启动服务
     ├── README.md                      # 项目说明文档
     │── requirements.txt               # 服务依赖文件
@@ -55,12 +60,85 @@ Audits
     └── run.sh                         # 启动脚本，用于启动服务
 ```
 
-## 安装
+## 环境搭建
+
+切换工作目录
 
 ```bash
-pip install addict, cx-oracle, addict, oracledb, pdf2image, scripts, stua, Flask, gevent, nltk, tiktoken
-
+cd envs
 ```
+
+### VLLM 环境安装
+
+具体安装文档请参考 [install_vllm](docs/install_vllm.md)
+
+```bash
+./start_vllm.sh
+```
+
+### PaddleX 环境安装
+
+具体安装文档请参考 [install_paddlex](docs/install_paddlex.md)
+
+```bash
+./start_paddlex.sh
+```
+
+### MinerU 环境安装
+
+具体安装文档请参考 [install_mineru](docs/install_mineru.md)
+```bash
+./start_mineru.sh
+```
+
+### mysql 环境安装
+
+需要修改安装脚本 [start_mysql.sh](envs/start_mysql.sh) 中的参数，包括安装包路径等，安装文档请参考 [install_mysql](docs/install_mysql.md) 然后执行安装命令
+
+```bash
+./start_mysql.sh
+```
+
+## 启动服务
+
+切换工作目录
+
+```bash
+cd services
+```
+
+### 启动vllm服务
+
+```bash
+./start_vllm32.sh
+```
+
+### 启动paddlex服务
+
+```bash
+./start_paddlex.sh
+```
+
+### 启动api服务
+
+```bash
+./api.sh
+```
+
+### 启动程序
+
+```bash
+cd ../
+./run.sh
+```
+
+## api 接口说明
+
+关于api接口的具体说明请参考 [api](docs/api.md)
+
+
+
+
 
 
 
