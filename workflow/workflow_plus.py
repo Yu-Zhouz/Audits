@@ -62,7 +62,7 @@ class Workflow(Base_Workflow):
 
             # 开始对结果进行后处理合并
             logging.info("开始对结果进行后处理！")
-            self._many_results(vlm_results)
+            self._merge_results(vlm_results)
             empty_count = sum(1 for value in self.results_dict.values() if value is None or value == "")
             if empty_count > self.max_empty_count:
                 for input_path in input_paths:

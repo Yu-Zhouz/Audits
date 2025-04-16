@@ -64,7 +64,7 @@ class Workflow(Base_Workflow):
 
             # 开始对结果进行后处理合并
             logging.info(f"开始对 {task_id} 结果进行后处理！")
-            self._many_results(vlm_results)
+            self._merge_results(vlm_results)
             empty_count = sum(1 for value in self.results_dict.values() if value is None or value == "")
             # 将vlm结果深拷贝
             results_vlm = copy.deepcopy(self.results_dict)

@@ -55,6 +55,6 @@ class Workflow(Base_Workflow):
 
             # 开始对结果进行后处理合并
             logging.info(f"开始对 {task_id} 结果进行后处理！")
-            self._many_results(vlm_results)
+            self._merge_results(vlm_results)
 
         return self.results_dict

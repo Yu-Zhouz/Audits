@@ -48,7 +48,7 @@ class Base_Workflow:
             # 如果条件不足，则将建筑面积设为 None
             self.results_dict['建筑面积'] = None
 
-    def _many_results(self, results):
+    def _merge_results(self, results):
         # 提取 results 结果中出现次数最多的值
         llm_field_values = {field: [] for field in self.results_dict.keys() if field != "公章"}
 
@@ -106,7 +106,7 @@ class Base_Workflow:
 
         # 提取 LLM 结果中出现次数最多的值
         if llm_results:
-            self._many_results(llm_results)
+            self._merge_results(llm_results)
         else:
             # 除公章和id以外全部为None
             for field in self.results_dict.keys():

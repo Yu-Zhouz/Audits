@@ -19,6 +19,7 @@ Audits
     ├── database/
     │   ├── db_downloader.py           # 单线程下载数据类，用于从平台下载PDF和图片文件
     │   ├── db_downloader_mt.py        # 多线程下载数据类，用于从平台下载PDF和图片文件
+    │   ├── audit_results_my.py        # mysql 数据库结果操作类，用于将模型识别的字典结果储存到数据库与api查询结果
     │   ├── audit_results.py           # 数据库结果操作类，用于将模型识别的字典结果储存到数据库与api查询结果
     │   └── audit_results.db           # 数据库文件，用于存储模型识别的字典结果
     ├── models/
@@ -40,8 +41,8 @@ Audits
     ├── services/
     │   ├── start_llm.sh               # LLM 服务启动脚本
     │   ├── start_paddlex.sh           # PaddleX 服务启动脚本
-    │   ├── start_vlm.sh               # vLM 服务启动Qwen-vl-7b模型脚本
-    │   ├── start_vlm32.sh             # VLM 服务启动Qwen-vl-32b模型脚本
+    │   ├── start_vlm.sh               # vLM 服务启动 Qwen-vl-7b模型脚本
+    │   ├── start_vlm32.sh             # VLM 服务启动 Qwen-vl-32b模型脚本
     │   └── app.sh                     # Flask 服务脚本，提供接口与平台交互
     ├── api/
     │   ├── api.py                     # API 脚本，提供接口与平台交互
