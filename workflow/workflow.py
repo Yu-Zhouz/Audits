@@ -13,6 +13,8 @@ from collections import Counter
 from fontTools.qu2cu.qu2cu import List
 from sympy import Dict
 
+from models import VLM
+
 
 class Base_Workflow:
     def __init__(self, config):
@@ -49,36 +51,94 @@ class Base_Workflow:
             self.results_dict['建筑面积'] = None
 
     def _merge_results(self, results):
-        # 提取 results 结果中出现次数最多的值
-        llm_field_values = {field: [] for field in self.results_dict.keys() if field != "公章"}
+        vlm = VLM(self.config)
+        # 使用列表推导式提取当事人字段
+        names_merge = [item.get("当事人") for item in results if
+                       item.get("当事人") is not None and item.get("当事人") != '']
 
-        for item in results:
-            if item is not None:
-                for field, value in item.items():
-                    if field in llm_field_values:
-                        # 如果值是列表，将其转换为字符串
-                        if isinstance(value, list):
-                            value = ", ".join(map(str, value))
-                        if value is not None and value != "null" and value != '':
-                            # 增加对图斑编号的判断和长度判断,
-                            if field == "图斑编号" and (not value.startswith("HZJGZW") or not (30 <= len(value) <= 33)):
-                                continue
-                            llm_field_values[field].append(value)
-                    if field == "公章":
-                        if value is True:
-                            self.results_dict["公章"] = True
-            else:
-                # 公章设置为False, 其余值为None
-                self.results_dict["公章"] = False
-                for field in self.results_dict.keys():
-                    if field != "公章":
-                        self.results_dict[field] = None
+        # 对每个字符串进行分割，假设公司名称之间用逗号分隔
+        names_split = []
+        for name in names_merge:
+            names_split.extend(name.split(', '))
 
-        # 选择每个字段出现次数最多的值
-        for field, values in llm_field_values.items():
-            if values:
-                most_common_value = Counter(values).most_common(1)[0][0]  # 取出现次数最多的值
-                self.results_dict[field] = most_common_value
+        # 去除空字符串并去重
+        names_split = [name.strip() for name in names_split if name.strip()]
+        name_counts = Counter(names_split)
+        # 按照出现次数降序排序
+        names = [name for name, count in name_counts.most_common()]
+        if len(names) >= 3:
+            names = names[:3]
+        name_type = vlm.judge_name_type(names)
+
+        if name_type == 1:
+            # 对多材料企业信息的处理, 要求当事人字段结果合并，用,分隔，其余值的处理与else处理一致
+            # 合并当事人字段
+            merged_names = ", ".join(names) if names else None
+            self.results_dict["当事人"] = str(merged_names) if merged_names else None  # 明确类型转换
+
+            # 处理其他字段
+            llm_field_values = {field: [] for field in self.results_dict.keys() if
+                                field != "公章" and field != "当事人"}
+
+            for item in results:
+                if item is not None:
+                    for field, value in item.items():
+                        if field in llm_field_values:
+                            # 如果值是列表，将其转换为字符串
+                            if isinstance(value, list):
+                                value = ", ".join(map(str, value))
+                            if value is not None and value != "null" and value != '':
+                                # 增加对图斑编号的判断和长度判断
+                                if field == "图斑编号" and (
+                                        not value.startswith("HZJGZW") or not (30 <= len(value) <= 33)):
+                                    continue
+                                llm_field_values[field].append(value)
+                        if field == "公章":
+                            if value is True:
+                                self.results_dict["公章"] = True
+                else:
+                    # 公章设置为False, 其余值为None
+                    self.results_dict["公章"] = False
+                    for field in self.results_dict.keys():
+                        if field != "公章":
+                            self.results_dict[field] = None
+
+            # 选择每个字段出现次数最多的值
+            for field, values in llm_field_values.items():
+                if values:
+                    most_common_value = Counter(values).most_common(1)[0][0]  # 取出现次数最多的值
+                    self.results_dict[field] = most_common_value
+        else:
+            # 提取 results 结果中出现次数最多的值
+            llm_field_values = {field: [] for field in self.results_dict.keys() if field != "公章"}
+
+            for item in results:
+                if item is not None:
+                    for field, value in item.items():
+                        if field in llm_field_values:
+                            # 如果值是列表，将其转换为字符串
+                            if isinstance(value, list):
+                                value = ", ".join(map(str, value))
+                            if value is not None and value != "null" and value != '':
+                                # 增加对图斑编号的判断和长度判断,
+                                if field == "图斑编号" and (not value.startswith("HZJGZW") or not (30 <= len(value) <= 33)):
+                                    continue
+                                llm_field_values[field].append(value)
+                        if field == "公章":
+                            if value is True:
+                                self.results_dict["公章"] = True
+                else:
+                    # 公章设置为False, 其余值为None
+                    self.results_dict["公章"] = False
+                    for field in self.results_dict.keys():
+                        if field != "公章":
+                            self.results_dict[field] = None
+
+            # 选择每个字段出现次数最多的值
+            for field, values in llm_field_values.items():
+                if values:
+                    most_common_value = Counter(values).most_common(1)[0][0]  # 取出现次数最多的值
+                    self.results_dict[field] = most_common_value
 
         # 根据建筑面积和占地面积之间的关系吗，更新建筑面积
         if self.results_dict['占地面积'] is not None:

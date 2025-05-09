@@ -6,6 +6,16 @@
 
 该智能体可用于完整的多文档字段提取工作，并且支持多模态的图像和文本识别工作流。
 
+## 系统要求
+
+- Python >= 3.10
+- 至少一张 A800 NVIDIA GPU部署LLM和PaddleX + 一张4090 NVIDIA GPU部署MinerU(长期推理使用两张A100)
+- 多个可转发Post的Linux内核的Docker容器
+- CUDA + PyTorch
+- 能够从Huggingface上下载模型权重
+- 稳定的网络连接
+- 高质量代理IP（重要）
+
 ## 环境搭建
 
 切换工作目录
