@@ -194,7 +194,8 @@ cd ../
 该框架包含以下模块：
 <details>
   <summary>👉 点击查看</summary>
-```
+
+```text
 Audits
     ├── config/
     │   ├── config.yaml                # 配置文件，存储路径、参数等配置信息
@@ -252,6 +253,7 @@ Audits
     ├── setup.sh                       # 环境搭建脚本，用于初始化虚拟环境和安装依赖
     └── run.sh                         # 启动脚本，用于启动服务
 ```
+
 </details>
 
 ## 开发计划
