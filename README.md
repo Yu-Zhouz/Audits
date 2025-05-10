@@ -32,7 +32,7 @@ cd envs
 ./start_vllm.sh
 ```
 
-响应地址 [http://172.16.15.10:30109/v1](http://172.16.15.10:30109/v1)
+响应地址 [http://localhost:30109/v1](http://localhost:30109/v1)
 
 ### PaddleX 环境安装
 
@@ -42,9 +42,9 @@ cd envs
 ./start_paddlex.sh
 ```
 
-OCR 响应地址 [http://172.16.15.10:30104/ocr](http://172.16.15.10:30104/ocr)
+OCR 响应地址 [http://localhost:30104/ocr](http://localhost:30104/ocr)
 
-seal 响应地址 [http://172.16.15.10:30105/seal](http://172.16.15.10:30105/seal)
+seal 响应地址 [http://localhost:30105/seal](http://localhost:30105/seal)
 
 ### MinerU 环境安装
 
@@ -181,7 +181,7 @@ cd services
 ./api.sh
 ```
 
-api 的响应地址为 [http://172.16.15.10:30108/api](http://172.16.15.10:30108/api)
+api 的响应地址为 [http://localhost:30108/api](http://localhost:30108/api)
 
 ### 启动程序
 
