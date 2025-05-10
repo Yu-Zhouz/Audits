@@ -61,6 +61,98 @@ seal 响应地址 [http://172.16.15.10:30105/seal](http://172.16.15.10:30105/sea
 ./start_mysql.sh
 ```
 
+## 配置说明
+
+### 数据库配置说明
+
+本项目包含两个主要数据库配置部分，分别位于 `config.yaml` 文件中的以下字段：
+
+#### 1. 下载材料相关数据库配置 (`db_download_config`)
+用于从源系统下载 PDF 和图像文件的数据库连接信息。
+
+示例配置：
+
+```yaml 
+db_download_config: 
+  user: 'your_username' # 数据库用户名 
+  password: 'your_password' # 数据库密码 
+  host: 'localhost' # 数据库主机地址 
+  port: 1521 # 数据库端口（如 Oracle） 
+  sid: 'orcl' # 数据库 SID（根据实际数据库调整）
+```
+> ⚠️ 注意：该数据库通常为 Oracle 或其他企业级数据库，请确保你的数据库支持长连接并已开放相应端口。
+
+---
+
+#### 2. 审核结果数据库配置 (`results_db_config`)
+用于存储 OCR、VLM 和 LLM 提取结果的数据库配置。支持 SQLite（开发环境）和 MySQL（生产环境）两种类型。
+
+示例配置：
+```yaml
+results_db_config:
+  db_type: "mysql" # 可选值: sqlite, mysql 
+  db_name: "./database/audit_results.db" # SQLite 数据库路径（若使用 SQLite） 
+  host: "localhost" # MySQL 主机地址 
+  port: 3306 # MySQL 端口 
+  user: "root" # MySQL 用户名 
+  password: "your_password" # MySQL 密码 
+  database: "audit_results" # 目标数据库名称
+```
+> 推荐在生产环境中使用 MySQL，SQLite 仅适用于本地测试。
+
+---
+
+#### 3. 配置建议流程：
+
+1. 复制 `config.yaml` 为 `config.local.yaml`（或 `.yaml.example`），作为本地配置模板。
+2. 修改 `db_download_config` 和 `results_db_config` 中的数据库连接信息。
+3. 在启动服务前确认数据库服务已运行，并且用户有相应权限。
+
+
+### 模型配置
+
+本项目使用多个模型完成 OCR、印章识别、文本理解与多模态内容提取任务。所有模型配置均在 `config.yaml` 文件中定义。
+
+#### 1. OCR 模型配置 (`ocr_mineru_config`, `ocr_paddle_config`)
+用于 PDF 和图像的文本提取。
+
+- `ocr_mineru_config`: 使用 MinerU 框架 + DocLayout-YOLO 模型解析 PDF 布局。
+  - `model`: 指定模型名称，如 `doclayout_yolo`
+  - `device`: 指定推理设备，支持 `gpu:0` 或 `cpu`
+
+- `ocr_paddle_config`: 使用 PaddleOCR 进行通用 OCR 处理。
+  - `pipeline`: 管道类型，如 `OCR`
+  - `device`: 推理设备，支持 GPU 或 CPU
+  - `batch_size`: 批处理大小
+  - `service_url`: 服务化部署地址（若为远程服务）
+
+---
+
+#### 2. 印章识别配置 (`seal_config`)
+用于识别图像中的印章信息。
+
+- `pipeline`: 指定为 [seal_recognition](./models/seal_recognition.py#L0-L0)
+- `device`: 推理设备
+- `batch_size`: 批量大小
+- [service_url](./models/seal_recognition.py#L0-L0): 若为远程服务，指定其地址
+
+---
+
+#### 3. LLM / VLM 配置 ([llm_config](./api/api.py#L31-L31), `vlm_config`)
+用于文本和图像内容的理解与字段提取。
+
+- [llm_config](./api/api.py#L31-L31): 使用 QwQ-32B 模型进行文本理解
+  - [model](./test/vlm_extraction.py#L0-L0): 模型名称
+  - `model_dir`: 本地模型路径
+  - [service_url](./models/seal_recognition.py#L0-L0): 若为远程 vLLM 服务
+  - `temperature`, `top_p`, `max_tokens`: 生成参数
+
+- `vlm_config`: 使用 Qwen2.5-VL-32B 多模态模型
+  - [model](./test/vlm_extraction.py#L0-L0): 模型名称
+  - [pdf_max_pages](./models/seal_recognition.py#L0-L0): 最大处理 PDF 页数（默认为 10）
+
+    
+
 ## 使用方法
 
 切换工作目录
